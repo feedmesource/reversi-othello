@@ -48,8 +48,6 @@ public class Menu
             Console.Write("Choose: ");
             userChoice = Console.ReadLine()?.ToLower();
 
-            // do something with the choice
-
             if (userChoice == null || !MenuItems.ContainsKey(userChoice))
             {
                 errorMessage = $"Invalid choice: {userChoice}";
