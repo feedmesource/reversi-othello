@@ -18,7 +18,7 @@ public class GameController
     {
         var errorMessage = "";
         var isWon = false;
-        ECellState winner = default;
+        ECellPiece winner = default;
 
         while (true)
         {
@@ -27,18 +27,18 @@ public class GameController
             errorMessage = "";
             if (!isWon)
             {
-                ConsoleUi.ShowNextPlayer(Brain.IsNextPlayerRed);
+                ConsoleUi.ShowNextPlayer(Brain.IsNextPlayerDark);
                 Console.Write("Choose column: ");
             }
             else
             {
                 switch (winner)
                 {
-                    case ECellState.RedWin:
-                        Console.WriteLine("RED WON!");
+                    case ECellPiece.Dark:
+                        Console.WriteLine("DARK WON!");
                         break;
-                    case ECellState.YellowWin:
-                        Console.WriteLine("YELLOW WON!");
+                    case ECellPiece.Light:
+                        Console.WriteLine("LIGHT WON!");
                         break;
                 }
 
@@ -48,6 +48,7 @@ public class GameController
                 break;
             }
 
+            // TODO: make parsing input string into separate method
             var columnChoice = Console.ReadLine();
             if (columnChoice == null)
             {
@@ -59,18 +60,18 @@ public class GameController
                 continue;
             }
 
-            var returnedError = Brain.PlacePiece(columnValue);
+            var returnedError = Brain.PlacePiece(column, row);
             if (returnedError != "")
             {
                 errorMessage = returnedError;
             }
             else
             {
-                winner = Brain.CheckWin(Brain.LastMove);
-                ConsoleUi.AnimateMove(Brain.LastMove, Brain.Board);
+                winner = Brain.CheckWinner();
+                // ConsoleUi.AnimateMove(Brain.LastMove, Brain.Board);
             }
 
-            if (winner != ECellState.Empty)
+            if (winner != ECellPiece.Empty)
             {
                 isWon = true;
             }

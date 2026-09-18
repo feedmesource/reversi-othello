@@ -4,24 +4,22 @@ public class GameConfiguration
 {
     public int BoardWidth { get; set; }
     public int BoardHeight { get; set; }
-    public int WinCondition { get; set; }
-    public bool IsCylindrical { get; set; }
+    public bool IsOthello { get; set; }
 
     public GameConfiguration()
-        : this(7, 6, 4)
+        : this(8, 8)
     {
     }
 
-    public GameConfiguration(bool isCylindrical)
-        : this(7, 6, 4, isCylindrical)
+    public GameConfiguration(bool isOthello)
+        : this(8, 8, isOthello)
     {
     }
 
-    public GameConfiguration(int width, int height, int winCondition, bool isCylindrical = false)
+    public GameConfiguration(int width, int height, bool isOthello = false)
     {
         BoardWidth = width;
         BoardHeight = height;
-        WinCondition = winCondition;
-        IsCylindrical = isCylindrical;
+        IsOthello = isOthello;
     }
 }

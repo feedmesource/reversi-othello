@@ -4,13 +4,12 @@ using BLL;
 
 public static class ConsoleUi
 {
-    public static void DrawBoard(ECellState[,] board)
+    public static void DrawBoard(ECellPiece[,] board)
     {
         Console.Clear();
         DrawColumnNumbers(board);
-
-        // cycle through backwards
-        for (var y = (board.GetLength(1) - 1); y >= 0; y--)
+        
+        for (var y = 0; y < board.GetLength(1); y++)
         {
             DrawLineSeparator(board);
             switch (y)
@@ -30,6 +29,7 @@ public static class ConsoleUi
 
             for (var x = 0; x < board.GetLength(0); x++)
             {
+                // TODO: change background color if cell has win state
                 var cell = "| " + DrawCell(board, x, y) + " ";
                 Console.Write(cell);
             }
@@ -40,7 +40,7 @@ public static class ConsoleUi
         DrawLineSeparator(board);
     }
 
-    private static void DrawColumnNumbers(ECellState[,] board)
+    private static void DrawColumnNumbers(ECellPiece[,] board)
     {
         Console.Write("    ");
         for (int i = 0; i < board.GetLength(0); i++)
@@ -64,21 +64,19 @@ public static class ConsoleUi
         Console.WriteLine();
     }
 
-    private static string DrawCell(ECellState[,] board, int x, int y)
+    private static string DrawCell(ECellPiece[,] board, int x, int y)
     {
         var cell = board[x, y] switch
         {
-            ECellState.Empty => " ",
-            ECellState.Red => "r",
-            ECellState.Yellow => "y",
-            ECellState.RedWin => "R",
-            ECellState.YellowWin => "Y",
+            ECellPiece.Empty => " ",
+            ECellPiece.Dark => "○",
+            ECellPiece.Light => "●",
             _ => "?"
         };
         return cell;
     }
 
-    private static void DrawLineSeparator(ECellState[,] board)
+    private static void DrawLineSeparator(ECellPiece[,] board)
     {
         Console.Write("    ");
 
@@ -90,25 +88,9 @@ public static class ConsoleUi
         Console.WriteLine("-");
     }
 
-    public static void ShowNextPlayer(bool isNextPlayerRed)
+    public static void ShowNextPlayer(bool isNextPlayerDark)
     {
-        Console.WriteLine("Next player: " + (isNextPlayerRed ? "red" : "yellow"));
+        Console.WriteLine("Next player: " + (isNextPlayerDark ? "dark" : "light"));
     }
-
-    public static void AnimateMove((int column, int columnHeight) lastMove, ECellState[,] board)
-    {
-        var (column, columnHeight) = lastMove;
-        var lastPlayer = board[column, columnHeight];
-
-        var temporaryBoard = (ECellState[,])board.Clone();
-
-        temporaryBoard[column, columnHeight] = ECellState.Empty;
-        for (var i = (temporaryBoard.GetLength(1) - 1); i >= lastMove.columnHeight; i--)
-        {
-            temporaryBoard[column, i] = lastPlayer;
-            DrawBoard(temporaryBoard);
-            Thread.Sleep(200);
-            temporaryBoard[column, i] = ECellState.Empty;
-        }
-    }
+    
 }

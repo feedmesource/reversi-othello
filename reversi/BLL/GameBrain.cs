@@ -3,9 +3,9 @@
 public class GameBrain
 {
     private GameConfiguration GameConfig { get; set; }
-    public ECellState[,] Board { get; set; }
-    private int[] ColumnHeights { get; set; }
-    public bool IsNextPlayerRed { get; private set; } = true;
+    public ECellPiece[,] Board { get; set; }
+    public ECellWinState[,] WinStateBoard { get; set; }
+    public bool IsNextPlayerDark { get; private set; } = true;
     public (int column, int columnHeight) LastMove { get; private set; }
 
     public GameBrain()
@@ -16,39 +16,22 @@ public class GameBrain
     public GameBrain(GameConfiguration config)
     {
         GameConfig = config;
-        Board = new ECellState[GameConfig.BoardWidth, GameConfig.BoardHeight];
-        ColumnHeights = new int[GameConfig.BoardWidth];
+        Board = new ECellPiece[GameConfig.BoardWidth, GameConfig.BoardHeight];
+        WinStateBoard = new ECellWinState[GameConfig.BoardWidth, GameConfig.BoardHeight];
     }
 
-    public string PlacePiece(int column)
+    public string PlacePiece(int column, int row)
     {
-        column--;
+        const string errorMessage = "Invalid move";
 
-        if (column >= Board.GetLength(0) || column < 0)
+        if (!IsValidCellPosition(column, row))
         {
-            return "No such column exists!";
+            return errorMessage;
         }
+        // LastMove = (column, row);
 
-        var columnHeight = ColumnHeights[column];
-
-        if (columnHeight == Board.GetLength(1))
-        {
-            return "This column is full!";
-        }
-
-        ColumnHeights[column]++;
-
-        switch (IsNextPlayerRed)
-        {
-            case true:
-                Board[column, columnHeight] = ECellState.Red;
-                break;
-            case false:
-                Board[column, columnHeight] = ECellState.Yellow;
-                break;
-        }
-
-        LastMove = (column, columnHeight);
+        var moveMade = MakeMove(column, row);
+        var gameOver = CheckGameOver();
 
         SwitchPlayer();
         return "";
@@ -56,7 +39,7 @@ public class GameBrain
 
     private void SwitchPlayer()
     {
-        IsNextPlayerRed = !IsNextPlayerRed;
+        IsNextPlayerDark = !IsNextPlayerDark;
     }
 
     private (int x, int y) GetDirection(int directionIndex)
@@ -71,7 +54,7 @@ public class GameBrain
         };
     }
 
-    private (int x, int y) FlipDirection((int x, int y) direction)
+    private static (int x, int y) FlipDirection((int x, int y) direction)
     {
         return (-direction.x, -direction.y);
     }
@@ -81,108 +64,142 @@ public class GameBrain
         return x >= 0 && x < GameConfig.BoardWidth && y >= 0 && y < GameConfig.BoardHeight;
     }
 
-    private bool IsValidCellPositionCylindrical(int y)
+
+    public bool MakeMove(int column, int row)
     {
-        return y >= 0 && y < GameConfig.BoardHeight;
-    }
+        var currentPLayer = !IsNextPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
-    private bool IsWrappingAroundEdge(int x)
-    {
-        return !(x >= 0 && x < GameConfig.BoardWidth);
-    }
+        var winner = CheckWinner();
 
-    public ECellState CheckWin((int column, int columnHeight) lastMove)
-    {
-        var isCylindrical = GameConfig.IsCylindrical;
-
-        var currentPLayer = !IsNextPlayerRed ? ECellState.Red : ECellState.Yellow;
-
-        var (x, y) = lastMove;
-
-
+        var positions = new List<(int, int)>();
+        
         for (var directionIndex = 0; directionIndex < 4; directionIndex++)
         {
             var (dirX, dirY) = GetDirection(directionIndex);
-
-            var countInRow = 1;
-
-            var positions = new List<(int, int)>();
-            positions.Add((x, y));
-
+            
             for (var i = 0; i < 2; i++) // both directions: 2 times
             {
-                var nextX = x;
-                var nextY = y;
+                var nextX = column;
+                var nextY = row;
 
-                while (countInRow < GameConfig.WinCondition)
+                do
                 {
-                    nextX += dirX;
-                    nextY += dirY;
-
-                    if (isCylindrical)
-                    {
-                        if (!IsValidCellPositionCylindrical(nextY))
-                        {
-                            break;
-                        }
-
-                        if (IsWrappingAroundEdge(nextX))
-                        {
-                            if (nextX < 0)
-                            {
-                                nextX = GameConfig.BoardWidth + nextX; // I add because nextX is negative
-                            }
-                            else if (nextX >= GameConfig.BoardWidth)
-                            {
-                                nextX -= GameConfig.BoardWidth;
-                            }
-
-                            Console.WriteLine($"X: {nextX}");
-                        }
-                    }
-                    else
-                    {
-                        if (!IsValidCellPosition(nextX, nextY))
-                        {
-                            break;
-                        }
-                    }
-
-                    if (Board[nextX, nextY] == currentPLayer)
-                    {
-                        countInRow++;
-                        positions.Add((nextX, nextY));
-                    }
-                    else
+                    if (!IsValidCellPosition(nextX, nextY))
                     {
                         break;
                     }
+
+                    if (Board[nextX, nextY] == FlipPlayer(currentPLayer))
+                    {
+                        positions.Add((nextX, nextY));
+                    }
+                    // else
+                    // {
+                    //     break;
+                    // }
+
+                    nextX += dirX;
+                    nextY += dirY;
+                } while (Board[nextX, nextY] != currentPLayer || Board[nextX, nextY] != ECellPiece.Empty);
+
+                if (Board[nextX, nextY] == currentPLayer)
+                {
+                    FlipPieces(positions);
                 }
 
-                if (countInRow == GameConfig.WinCondition)
+                positions.Clear();
+
+                if (CheckGameOver())
                 {
-                    DrawOutWinningTiles(positions);
-                    return currentPLayer == ECellState.Red ? ECellState.RedWin : ECellState.YellowWin;
+                    HighlightWinningTiles(winner);
+                    return currentPLayer == ECellPiece.Dark ? ECellPiece.Dark : ECellPiece.Light;
                 }
 
                 (dirX, dirY) = FlipDirection((dirX, dirY));
             }
         }
 
-        return ECellState.Empty;
+        return ECellPiece.Empty;
     }
 
-    private void DrawOutWinningTiles(List<(int, int)> positions)
+    private bool CheckGameOver()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void FlipPieces(List<(int, int)> positions)
     {
         foreach (var (x, y) in positions)
         {
-            if (Board[x, y] == ECellState.Red)
+            Board[x, y] = FlipPlayer(Board[x, y]);
+        }
+    }
+
+    private static ECellPiece FlipPlayer(ECellPiece piece)
+    {
+        if (piece == ECellPiece.Dark)
+        {
+            return ECellPiece.Light;
+        }
+
+        if (piece == ECellPiece.Light)
+        {
+            return ECellPiece.Dark;
+        }
+
+        if (piece == ECellPiece.Empty)
+        {
+            throw new ArgumentException("Pieces to flip shouldn't include Empty cell.");
+        }
+
+        throw new ArgumentException("Pieces to flip shouldn't include winning cell.");
+    }
+
+    public ECellPiece CheckWinner()
+    {
+        var darkCount = 0;
+        var lightCount = 0;
+
+        foreach (var cell in Board)
+        {
+            switch (cell)
             {
-                Board[x, y] = ECellState.RedWin;
+                case ECellPiece.Dark:
+                    darkCount++;
+                    break;
+                case ECellPiece.Light:
+                    lightCount++;
+                    break;
+                case ECellPiece.Empty:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            else if (Board[x, y] == ECellState.Yellow)
+        }
+
+        if (darkCount > lightCount)
+        {
+            return ECellPiece.Dark;
+        }
+
+        if (lightCount > darkCount)
+        {
+            return ECellPiece.Light;
+        }
+
+        return ECellPiece.Empty;
+    }
+
+    private void HighlightWinningTiles(ECellPiece winner)
+    {
+        for (var i = 0; i < WinStateBoard.GetLength(0); i++)
+        {
+            for (var j = 0; j < WinStateBoard.GetLength(1); j++)
             {
-                Board[x, y] = ECellState.YellowWin;
+                if (winner == ECellPiece.Dark && Board[i, j] == ECellPiece.Dark || winner == ECellPiece.Light && Board[i, j] == ECellPiece.Light)
+                {
+                    WinStateBoard[i, j] = ECellWinState.Win;
+                }
             }
         }
     }
