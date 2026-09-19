@@ -7,6 +7,7 @@ public class GameBrain
     public ECellWinState[,] WinStateBoard { get; set; }
     public bool IsNextPlayerDark { get; private set; } = true;
     public (int column, int columnHeight) LastMove { get; private set; }
+    private ECellPiece Winner { get; set; }
 
     public GameBrain()
         : this(new GameConfiguration())
@@ -31,7 +32,7 @@ public class GameBrain
         // LastMove = (column, row);
 
         var moveMade = MakeMove(column, row);
-        var gameOver = CheckGameOver();
+        var gameOver = IsValidMoves();
 
         SwitchPlayer();
         return "";
@@ -42,7 +43,7 @@ public class GameBrain
         IsNextPlayerDark = !IsNextPlayerDark;
     }
 
-    private (int x, int y) GetDirection(int directionIndex)
+    private static (int x, int y) GetDirection(int directionIndex)
     {
         return directionIndex switch
         {
@@ -69,7 +70,7 @@ public class GameBrain
     {
         var currentPLayer = !IsNextPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
-        var winner = CheckWinner();
+        var isMoveValid = false;
 
         var positions = new List<(int, int)>();
         
@@ -105,28 +106,34 @@ public class GameBrain
                 if (Board[nextX, nextY] == currentPLayer)
                 {
                     FlipPieces(positions);
+                    isMoveValid = true;
                 }
 
                 positions.Clear();
 
-                if (CheckGameOver())
+                if (!IsValidMoves() || IsBoardFull())
                 {
-                    HighlightWinningTiles(winner);
-                    return currentPLayer == ECellPiece.Dark ? ECellPiece.Dark : ECellPiece.Light;
+                    Winner = CheckWinner();
+                    HighlightWinningTiles(Winner);
                 }
 
                 (dirX, dirY) = FlipDirection((dirX, dirY));
             }
         }
 
-        return ECellPiece.Empty;
+        return isMoveValid;
     }
-
-    private bool CheckGameOver()
+    
+    private bool IsValidMoves()
     {
         throw new NotImplementedException();
     }
 
+    private bool IsBoardFull()
+    {
+        throw new NotImplementedException();
+    }
+    
     private void FlipPieces(List<(int, int)> positions)
     {
         foreach (var (x, y) in positions)

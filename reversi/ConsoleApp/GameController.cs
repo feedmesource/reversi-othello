@@ -47,19 +47,11 @@ public class GameController
                 Console.Read();
                 break;
             }
+            
+            if (GetUserInput(out var coordinates)) continue;
 
-            // TODO: make parsing input string into separate method
-            var columnChoice = Console.ReadLine();
-            if (columnChoice == null)
-            {
-                continue;
-            }
-
-            if (!int.TryParse(columnChoice, out int columnValue))
-            {
-                continue;
-            }
-
+            var (column, row) = coordinates;
+            
             var returnedError = Brain.PlacePiece(column, row);
             if (returnedError != "")
             {
@@ -76,5 +68,33 @@ public class GameController
                 isWon = true;
             }
         }
+    }
+
+    private static bool GetUserInput(out (int, int) coordinates)
+    {
+        coordinates = default;
+        
+        var coordinateChoice = Console.ReadLine();
+        if (coordinateChoice == null)
+        {
+            return false;
+        }
+        
+        //TODO: validate input
+        var columnRow = coordinateChoice.Split(",", StringSplitOptions.TrimEntries);
+        
+        if (!int.TryParse(columnRow[0], out var column))
+        {
+            return false;
+        }
+        
+        if (!int.TryParse(columnRow[1], out var row))
+        {
+            return false;
+        }
+        
+        coordinates = (column, row);
+
+        return true;
     }
 }

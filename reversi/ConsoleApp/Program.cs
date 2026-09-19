@@ -27,20 +27,25 @@ var menuItems = new List<MenuItem>()
         var menu1 = new Menu("Settings", EMenuLevel.Second);
         menu1.AddMenuItem(new MenuItem("c", "Game configuration", () =>
         {
-            var menu2 = new Menu($"Game configuration: {config.BoardWidth}x{config.BoardHeight} win:{config.WinCondition} cylindrical:{config.IsCylindrical}", EMenuLevel.Deep);
-            menu2.AddMenuItem(new MenuItem("1", "Classical: 7x6, win: 4", () =>
+            var menu2 = new Menu($"Game configuration: {(config.IsOthello ? "Othello" : "Reversi")}: {config.BoardWidth}x{config.BoardHeight}{(config.HaveWalls ? " - with walls" : "")}", EMenuLevel.Deep);
+            menu2.AddMenuItem(new MenuItem("1", "Classical Reversi: 8x8", () =>
             {
-                config = new GameConfiguration(7, 6, 4);
+                config = new GameConfiguration();
                 return "b";
             }));
-            menu2.AddMenuItem(new MenuItem("2", "Classical: cylindrical", () =>
+            menu2.AddMenuItem(new MenuItem("2", "Mini Reversi: 6x6", () =>
+            {
+                config = new GameConfiguration(6, 6);
+                return "b";
+            }));
+            menu2.AddMenuItem(new MenuItem("3", "Classical Othello: 8x8", () =>
             {
                 config = new GameConfiguration(true);
                 return "b";
             }));
-            menu2.AddMenuItem(new MenuItem("3", "5x5, win 3", () =>
+            menu2.AddMenuItem(new MenuItem("6", "Mini Othello: 8x8", () =>
             {
-                config = new GameConfiguration(5, 5, 3);
+                config = new GameConfiguration(6, 6, true);
                 return "b";
             }));
             var returnValue = menu2.Run();
