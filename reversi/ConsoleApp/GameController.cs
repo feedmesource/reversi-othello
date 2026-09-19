@@ -48,7 +48,7 @@ public class GameController
                 break;
             }
             
-            if (GetUserInput(out var coordinates)) continue;
+            if (!GetUserInput(out var coordinates)) continue;
 
             var (column, row) = coordinates;
             

@@ -43,7 +43,7 @@ var menuItems = new List<MenuItem>()
                 config = new GameConfiguration(true);
                 return "b";
             }));
-            menu2.AddMenuItem(new MenuItem("6", "Mini Othello: 8x8", () =>
+            menu2.AddMenuItem(new MenuItem("4", "Mini Othello: 8x8", () =>
             {
                 config = new GameConfiguration(6, 6, true);
                 return "b";

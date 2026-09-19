@@ -27,12 +27,21 @@ public class GameBrain
 
         if (!IsValidCellPosition(column, row))
         {
-            return errorMessage;
+            return "No such coordinate";
         }
         // LastMove = (column, row);
 
         var moveMade = MakeMove(column, row);
-        var gameOver = IsValidMoves();
+        if (!moveMade) return errorMessage;
+        
+        if (!IsValidMoves() || IsBoardFull())
+        {
+            Winner = CheckWinner();
+            HighlightWinningTiles(Winner);
+            
+            // TODO: Check tie too
+            return $"Game over! Winner is {(Winner == ECellPiece.Dark ? "Dark" : "Light")}";
+        }
 
         SwitchPlayer();
         return "";
@@ -110,13 +119,7 @@ public class GameBrain
                 }
 
                 positions.Clear();
-
-                if (!IsValidMoves() || IsBoardFull())
-                {
-                    Winner = CheckWinner();
-                    HighlightWinningTiles(Winner);
-                }
-
+                
                 (dirX, dirY) = FlipDirection((dirX, dirY));
             }
         }
