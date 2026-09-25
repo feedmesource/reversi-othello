@@ -1,6 +1,6 @@
 namespace BLL;
 
-public class GameConfiguration
+public record GameConfiguration
 {
     public int BoardWidth { get; init; }
     public int BoardHeight { get; init; }

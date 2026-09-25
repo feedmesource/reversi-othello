@@ -2,12 +2,14 @@
 
 public class GameBrain
 {
-    private GameConfiguration GameConfig { get; set; }
-    public ECellPiece[,] Board { get; set; }
-    public ECellWinState[,] WinStateBoard { get; set; }
-    public bool IsNextPlayerDark { get; private set; } = true;
-    public (int column, int columnHeight) LastMove { get; private set; }
-    private ECellPiece Winner { get; set; }
+    private GameConfiguration GameConfig { get; }
+    private readonly GameState _state;
+    public bool IsCurrentPlayerDark => _state.IsCurrentPlayerDark;
+    private IPlayer[] Players { get; }
+    private int CurrentPlayerIndex { get; set; }
+    private int NoValidMovesCount { get; set; }
+    private (int, int)[] ValidFirst4Moves { get; } = new (int, int)[4];
+    public EGameStatus GameStatus { get; private set; }
 
     public GameBrain()
         : this(new GameConfiguration())
@@ -15,42 +17,47 @@ public class GameBrain
     }
 
     public GameBrain(GameConfiguration config)
+        : this(config, [new HumanPlayer("Player 1"), new HumanPlayer("Player 2")])
+    {
+    }
+
+    public GameBrain(GameConfiguration config, IPlayer[] players)
     {
         GameConfig = config;
-        Board = new ECellPiece[GameConfig.BoardWidth, GameConfig.BoardHeight];
-        WinStateBoard = new ECellWinState[GameConfig.BoardWidth, GameConfig.BoardHeight];
+        _state = new GameState(config.BoardWidth, config.BoardHeight);
+        Players = players;
+        CurrentPlayerIndex = 0;
+
+        var positionX = GameConfig.BoardWidth / 2 - 1; // -1 because of 0-indexing
+        var positionY = GameConfig.BoardHeight / 2 - 1; // -1 because of 0-indexing
+        ValidFirst4Moves[0] = (positionX + 1, positionY);
+        ValidFirst4Moves[1] = (positionX, positionY);
+        ValidFirst4Moves[2] = (positionX, positionY + 1);
+        ValidFirst4Moves[3] = (positionX + 1, positionY + 1);
+
+        if (GameConfig.IsOthello)
+        {
+            foreach (var oneOfFirstMoves in ValidFirst4Moves)
+            {
+                PlacePiece(oneOfFirstMoves.Item1, oneOfFirstMoves.Item2);
+            }
+        }
     }
 
-    public string PlacePiece(int column, int row)
+    public void PlacePiece(int column, int row)
     {
-        const string errorMessage = "Invalid move";
-
-        if (!IsValidCellPosition(column, row))
-        {
-            return "No such coordinate";
-        }
+        if (!IsCellCoordinateOnBoard(column, row)) throw new ArgumentException("No such coordinate");
         // LastMove = (column, row);
 
+        if (_state.GetCellState(column, row) != ECellPiece.Empty)
+            throw new ArgumentException("There is a piece already in that position");
+
         var moveMade = MakeMove(column, row);
-        if (!moveMade) return errorMessage;
-        
-        if (!IsValidMoves() || IsBoardFull())
-        {
-            Winner = CheckWinner();
-            HighlightWinningTiles(Winner);
-            
-            // TODO: Check tie too
-            return $"Game over! Winner is {(Winner == ECellPiece.Dark ? "Dark" : "Light")}";
-        }
+        if (!moveMade) throw new ArgumentException("Invalid move");
 
         SwitchPlayer();
-        return "";
     }
 
-    private void SwitchPlayer()
-    {
-        IsNextPlayerDark = !IsNextPlayerDark;
-    }
 
     private static (int x, int y) GetDirection(int directionIndex)
     {
@@ -60,117 +67,205 @@ public class GameBrain
             1 => (-1, -1), // diagonal up-left
             2 => (0, -1), // vertical (up)
             3 => (1, -1), // diagonal up-right
+            4 => (1, 0), // horizontal (right)
+            5 => (1, 1), // diagonal down-right
+            6 => (0, 1), // vertical (down)
+            7 => (-1, 1), // diagonal down-left
             _ => (0, 0)
         };
     }
 
-    private static (int x, int y) FlipDirection((int x, int y) direction)
-    {
-        return (-direction.x, -direction.y);
-    }
 
-    private bool IsValidCellPosition(int x, int y)
+    private bool IsCellCoordinateOnBoard(int x, int y)
     {
         return x >= 0 && x < GameConfig.BoardWidth && y >= 0 && y < GameConfig.BoardHeight;
     }
 
 
-    public bool MakeMove(int column, int row)
+    private bool MakeMove(int column, int row)
     {
-        var currentPLayer = !IsNextPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
+        var currentPLayer = _state.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
         var isMoveValid = false;
 
         var positions = new List<(int, int)>();
-        
-        for (var directionIndex = 0; directionIndex < 4; directionIndex++)
+
+        if (!IsPiecesCountAtLeast4())
+        {
+            if (ValidFirst4Moves.Contains((column, row)))
+            {
+                _state.PlacePiece(column, row, currentPLayer);
+                return true;
+            }
+
+            return false;
+        }
+
+        for (var directionIndex = 0; directionIndex < 8; directionIndex++)
         {
             var (dirX, dirY) = GetDirection(directionIndex);
-            
-            for (var i = 0; i < 2; i++) // both directions: 2 times
+
+            var nextX = column;
+            var nextY = row;
+
+            nextX += dirX;
+            nextY += dirY;
+
+            if (!IsCellCoordinateOnBoard(nextX, nextY)) continue;
+
+            do
             {
-                var nextX = column;
-                var nextY = row;
+                if (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
+                    positions.Add((nextX, nextY));
+                else
+                    break;
 
-                do
+                nextX += dirX;
+                nextY += dirY;
+
+                if (!IsCellCoordinateOnBoard(nextX, nextY))
+                    break;
+            } while (_state.GetCellState(nextX, nextY) != currentPLayer ||
+                     _state.GetCellState(nextX, nextY) != ECellPiece.Empty);
+
+
+            if (IsCellCoordinateOnBoard(nextX, nextY) && _state.GetCellState(nextX, nextY) == currentPLayer)
+            {
+                if (positions.Count > 0)
                 {
-                    if (!IsValidCellPosition(nextX, nextY))
-                    {
-                        break;
-                    }
-
-                    if (Board[nextX, nextY] == FlipPlayer(currentPLayer))
-                    {
-                        positions.Add((nextX, nextY));
-                    }
-                    // else
-                    // {
-                    //     break;
-                    // }
-
-                    nextX += dirX;
-                    nextY += dirY;
-                } while (Board[nextX, nextY] != currentPLayer || Board[nextX, nextY] != ECellPiece.Empty);
-
-                if (Board[nextX, nextY] == currentPLayer)
-                {
+                    _state.PlacePiece(column, row, currentPLayer);
                     FlipPieces(positions);
+
                     isMoveValid = true;
                 }
-
-                positions.Clear();
-                
-                (dirX, dirY) = FlipDirection((dirX, dirY));
             }
+
+            positions.Clear();
         }
 
         return isMoveValid;
     }
-    
-    private bool IsValidMoves()
+
+    private bool IsValidMove(int column, int row)
     {
-        throw new NotImplementedException();
+        ECellPiece currentPLayer = _state.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
+
+        var positions = new List<(int, int)>();
+
+        for (var directionIndex = 0; directionIndex < 8; directionIndex++)
+        {
+            var (dirX, dirY) = GetDirection(directionIndex);
+
+            var nextX = column;
+            var nextY = row;
+
+            nextX += dirX;
+            nextY += dirY;
+            if (!IsCellCoordinateOnBoard(nextX, nextY)) continue;
+
+            do
+            {
+                if (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
+                    positions.Add((nextX, nextY));
+                else
+                    break;
+
+                nextX += dirX;
+                nextY += dirY;
+
+                if (!IsCellCoordinateOnBoard(nextX, nextY)) break;
+            } while (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer));
+
+
+            if (IsCellCoordinateOnBoard(nextX, nextY) && _state.GetCellState(nextX, nextY) == currentPLayer)
+            {
+                if (positions.Count > 0)
+                    return true;
+            }
+
+            positions.Clear();
+        }
+
+        return false;
     }
 
-    private bool IsBoardFull()
+    public bool IsGameOver()
     {
-        throw new NotImplementedException();
+        return GameStatus != EGameStatus.InProgress;
     }
-    
+
+    public bool IsValidMoves()
+    {
+        foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
+        {
+            var cell = _state.GetCellState(column, row);
+            if (cell == ECellPiece.Empty && IsValidMove(column, row))
+            {
+                NoValidMovesCount = 0;
+                return true;
+            }
+        }
+
+        NoValidMovesCount++;
+        return false;
+    }
+
+    public HashSet<(int, int)> GetAllValidMoves()
+    {
+        var validMoves = new HashSet<(int, int)>();
+
+        foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
+        {
+            if (_state.GetCellState(column, row) == ECellPiece.Empty && IsValidMove(column, row))
+            {
+                validMoves.Add((column, row));
+            }
+        }
+
+        return validMoves;
+    }
+
+
     private void FlipPieces(List<(int, int)> positions)
     {
         foreach (var (x, y) in positions)
         {
-            Board[x, y] = FlipPlayer(Board[x, y]);
+            _state.PlacePiece(x, y, FlipPlayer(_state.GetCellState(x, y)));
         }
     }
 
     private static ECellPiece FlipPlayer(ECellPiece piece)
     {
-        if (piece == ECellPiece.Dark)
+        return piece switch
         {
-            return ECellPiece.Light;
-        }
-
-        if (piece == ECellPiece.Light)
-        {
-            return ECellPiece.Dark;
-        }
-
-        if (piece == ECellPiece.Empty)
-        {
-            throw new ArgumentException("Pieces to flip shouldn't include Empty cell.");
-        }
-
-        throw new ArgumentException("Pieces to flip shouldn't include winning cell.");
+            ECellPiece.Dark => ECellPiece.Light,
+            ECellPiece.Light => ECellPiece.Dark,
+            ECellPiece.Empty => throw new ArgumentException("Pieces to flip shouldn't include Empty cell."),
+            _ => throw new ArgumentException("This should never run.")
+        };
     }
 
-    public ECellPiece CheckWinner()
+    private bool IsPiecesCountAtLeast4()
+    {
+        var piecesCount = 0;
+
+        foreach (var cell in _state.GetBoard())
+        {
+            if (cell != ECellPiece.Empty)
+                piecesCount++;
+
+            if (piecesCount >= 4) return true;
+        }
+
+        return false;
+    }
+
+    private EGameStatus GetWinStatus()
     {
         var darkCount = 0;
         var lightCount = 0;
 
-        foreach (var cell in Board)
+        foreach (var cell in _state.GetBoard())
         {
             switch (cell)
             {
@@ -187,30 +282,67 @@ public class GameBrain
             }
         }
 
-        if (darkCount > lightCount)
-        {
-            return ECellPiece.Dark;
-        }
+        if (darkCount > lightCount) return EGameStatus.DarkWon;
 
-        if (lightCount > darkCount)
-        {
-            return ECellPiece.Light;
-        }
+        if (lightCount > darkCount) return EGameStatus.LightWon;
 
-        return ECellPiece.Empty;
+        return EGameStatus.Draw;
     }
 
-    private void HighlightWinningTiles(ECellPiece winner)
+    public static ECellPiece GetWinner(EGameStatus status)
+    {
+        return status switch
+        {
+            EGameStatus.DarkWon => ECellPiece.Dark,
+            EGameStatus.LightWon => ECellPiece.Light,
+            _ => ECellPiece.Empty
+        };
+    }
+
+    public void GameEndCheckMethods()
+    {
+        if (IsPiecesCountAtLeast4())
+        {
+            if (NoValidMovesCount == 2 || IsBoardFull())
+            {
+                GameStatus = GetWinStatus();
+            }
+        }
+    }
+
+    /*private void HighlightWinningTiles(ECellPiece winner)
     {
         for (var i = 0; i < WinStateBoard.GetLength(0); i++)
         {
             for (var j = 0; j < WinStateBoard.GetLength(1); j++)
             {
-                if (winner == ECellPiece.Dark && Board[i, j] == ECellPiece.Dark || winner == ECellPiece.Light && Board[i, j] == ECellPiece.Light)
+                if (winner == ECellPiece.Dark && Board[i, j] == ECellPiece.Dark ||
+                    winner == ECellPiece.Light && Board[i, j] == ECellPiece.Light)
                 {
                     WinStateBoard[i, j] = ECellWinState.Win;
                 }
+                else if (winner == ECellPiece.Empty)
+                {
+                    WinStateBoard[i, j] = ECellWinState.Tie;
+                }
             }
         }
+    }*/
+
+
+    public void SwitchPlayer()
+    {
+        _state.SwitchPlayer();
+        CurrentPlayerIndex = ++CurrentPlayerIndex % 2;
     }
+
+    public IPlayer GetCurrentPlayer()
+    {
+        return Players[CurrentPlayerIndex];
+    }
+
+    public ECellPiece[,] GetBoard() => _state.GetBoard();
+    private bool IsBoardFull() => _state.IsBoardFull();
+
+    private HashSet<(int, int)> GetEmptyCellCoordinates() => _state.GetEmptyCellCoordinates();
 }

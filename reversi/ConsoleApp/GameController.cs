@@ -7,94 +7,100 @@ public class GameController
 {
     private GameBrain Brain { get; set; }
     private GameConfiguration Config { get; set; }
-
+    
     public GameController(GameConfiguration config)
     {
         Config = config;
-        Brain = new GameBrain(Config);
+        Brain = new GameBrain(Config, [new HumanPlayer("Player 1"), new AiPlayer()]);
     }
 
     public void GameLoop()
     {
         var errorMessage = "";
-        var isWon = false;
-        ECellPiece winner = default;
 
         while (true)
         {
-            ConsoleUi.DrawBoard(Brain.Board);
+            ConsoleUi.DrawBoard(Brain.GetBoard());
             Console.WriteLine(errorMessage);
             errorMessage = "";
+            
+            Brain.GameEndCheckMethods();
+            var isWon = Brain.IsGameOver();
+            
+            if (!isWon && !Brain.IsValidMoves())
+            {
+                Console.WriteLine("No valid moves!");
+                Console.Write("This turn will be skipped. \nPress Enter:");
+                Console.Read();
+                Brain.SwitchPlayer();
+                continue;
+            }
+
             if (!isWon)
             {
-                ConsoleUi.ShowNextPlayer(Brain.IsNextPlayerDark);
-                Console.Write("Choose column: ");
+                ConsoleUi.ShowNextPlayer(Brain.IsCurrentPlayerDark);
             }
             else
             {
-                switch (winner)
-                {
-                    case ECellPiece.Dark:
-                        Console.WriteLine("DARK WON!");
-                        break;
-                    case ECellPiece.Light:
-                        Console.WriteLine("LIGHT WON!");
-                        break;
-                }
-
-                Console.WriteLine();
+                var winner = GameBrain.GetWinner(Brain.GameStatus);
+                
+                Console.WriteLine(GetWinnerString(winner));
                 Console.Write("Press enter to exit the game:");
                 Console.Read();
                 break;
             }
-            
-            if (!GetUserInput(out var coordinates)) continue;
+
+            if (!GetUserInput(out var coordinates))
+            {
+                errorMessage = "Not valid input";
+                continue;
+            }
 
             var (column, row) = coordinates;
-            
-            var returnedError = Brain.PlacePiece(column, row);
-            if (returnedError != "")
+
+            try
             {
-                errorMessage = returnedError;
-            }
-            else
-            {
-                winner = Brain.CheckWinner();
+                Brain.PlacePiece(column, row);
                 // ConsoleUi.AnimateMove(Brain.LastMove, Brain.Board);
             }
-
-            if (winner != ECellPiece.Empty)
+            catch (ArgumentException e)
             {
-                isWon = true;
-            }
+                errorMessage = e.Message;
+            } 
         }
     }
 
-    private static bool GetUserInput(out (int, int) coordinates)
+    private bool GetUserInput(out (int, int) coordinates)
     {
-        coordinates = default;
-        
-        var coordinateChoice = Console.ReadLine();
-        if (coordinateChoice == null)
-        {
-            return false;
-        }
-        
-        //TODO: validate input
-        var columnRow = coordinateChoice.Split(",", StringSplitOptions.TrimEntries);
-        
-        if (!int.TryParse(columnRow[0], out var column))
-        {
-            return false;
-        }
-        
-        if (!int.TryParse(columnRow[1], out var row))
-        {
-            return false;
-        }
-        
-        coordinates = (column, row);
+        var currentPlayer = Brain.GetCurrentPlayer();
 
-        return true;
+        var coordinateChoice = currentPlayer.GetMove(Brain.GetAllValidMoves());
+        
+        coordinates = default;
+
+        if (coordinateChoice != null)
+        {
+            coordinates = ((int, int)) coordinateChoice;
+            return true;
+        }
+        return false;
+    }
+
+    private string GetWinnerString(ECellPiece winnerPiece)
+    {
+        var winner = "";
+        switch (winnerPiece)
+        {
+            case ECellPiece.Dark:
+                winner = "dark";
+                break;
+            case ECellPiece.Light:
+                winner = "light";
+                break;
+            case ECellPiece.Empty:
+                return "Game was tied!";
+        }
+
+        return $"Game over! Winner is {winner}!";
     }
 }

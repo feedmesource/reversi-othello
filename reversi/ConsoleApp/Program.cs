@@ -4,8 +4,8 @@ using BLL;
 using ConsoleApp;
 using MenuSystem;
 
-var menu = new Menu("Hyper Connect x", EMenuLevel.First);
-var config = new GameConfiguration();
+var menu = new Menu("Reversi - Othello", EMenuLevel.First);
+var config = new GameConfiguration(4, 4, true); // for testing purposes TODO: remove later
 
 string DummyMethod()
 {
@@ -43,7 +43,7 @@ var menuItems = new List<MenuItem>()
                 config = new GameConfiguration(true);
                 return "b";
             }));
-            menu2.AddMenuItem(new MenuItem("4", "Mini Othello: 8x8", () =>
+            menu2.AddMenuItem(new MenuItem("4", "Mini Othello: 6x6", () =>
             {
                 config = new GameConfiguration(6, 6, true);
                 return "b";
