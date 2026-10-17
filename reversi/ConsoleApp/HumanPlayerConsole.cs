@@ -1,10 +1,12 @@
-namespace BLL;
+using BLL;
 
-public class HumanPlayer : IPlayer
+namespace ConsoleApp;
+
+public class HumanPlayerConsole : IPlayer
 {
     public string Name { get; }
 
-    public HumanPlayer(string name)
+    public HumanPlayerConsole(string name)
     {
         Name = name;
     }

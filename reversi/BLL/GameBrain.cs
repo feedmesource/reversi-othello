@@ -2,44 +2,37 @@
 
 public class GameBrain
 {
-    private GameConfiguration GameConfig { get; }
     private readonly GameState _state;
     public bool IsCurrentPlayerDark => _state.IsCurrentPlayerDark;
     private IPlayer[] Players { get; }
     private int CurrentPlayerIndex { get; set; }
     private int NoValidMovesCount { get; set; }
     private (int, int)[] ValidFirst4Moves { get; } = new (int, int)[4];
-    public EGameStatus GameStatus { get; private set; }
+    private EGameStatus GameStatus { get; set; }
 
-    public GameBrain()
-        : this(new GameConfiguration())
+    public GameBrain(IPlayer[] players)
+        : this(new GameConfiguration(), players)
     {
     }
-
-    public GameBrain(GameConfiguration config)
-        : this(config, [new HumanPlayer("Player 1"), new HumanPlayer("Player 2")])
-    {
-    }
-
+    
     public GameBrain(GameConfiguration config, IPlayer[] players)
     {
-        GameConfig = config;
-        _state = new GameState(config.BoardWidth, config.BoardHeight);
+        _state = new GameState(config.BoardWidth, config.BoardHeight, config);
         Players = players;
         CurrentPlayerIndex = 0;
 
-        var positionX = GameConfig.BoardWidth / 2 - 1; // -1 because of 0-indexing
-        var positionY = GameConfig.BoardHeight / 2 - 1; // -1 because of 0-indexing
+        var positionX = _state.Config.BoardWidth / 2 - 1; // -1 because of 0-indexing
+        var positionY = _state.Config.BoardHeight / 2 - 1; // -1 because of 0-indexing
         ValidFirst4Moves[0] = (positionX + 1, positionY);
         ValidFirst4Moves[1] = (positionX, positionY);
         ValidFirst4Moves[2] = (positionX, positionY + 1);
         ValidFirst4Moves[3] = (positionX + 1, positionY + 1);
 
-        if (GameConfig.IsOthello)
+        if (_state.Config.IsOthello)
         {
-            foreach (var oneOfFirstMoves in ValidFirst4Moves)
+            foreach (var (column, row) in ValidFirst4Moves)
             {
-                PlacePiece(oneOfFirstMoves.Item1, oneOfFirstMoves.Item2);
+                PlacePiece(column, row);
             }
         }
     }
@@ -52,7 +45,7 @@ public class GameBrain
         if (_state.GetCellState(column, row) != ECellPiece.Empty)
             throw new ArgumentException("There is a piece already in that position");
 
-        var moveMade = MakeMove(column, row);
+        var moveMade = TryMakeMove(column, row);
         if (!moveMade) throw new ArgumentException("Invalid move");
 
         SwitchPlayer();
@@ -78,11 +71,11 @@ public class GameBrain
 
     private bool IsCellCoordinateOnBoard(int x, int y)
     {
-        return x >= 0 && x < GameConfig.BoardWidth && y >= 0 && y < GameConfig.BoardHeight;
+        return x >= 0 && x < _state.Config.BoardWidth && y >= 0 && y < _state.Config.BoardHeight;
     }
 
 
-    private bool MakeMove(int column, int row)
+    private bool TryMakeMove(int column, int row)
     {
         var currentPLayer = _state.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
@@ -108,6 +101,7 @@ public class GameBrain
             var nextX = column;
             var nextY = row;
 
+            // TODO: glue previous and next lines together (after writing unit tests)
             nextX += dirX;
             nextY += dirY;
 

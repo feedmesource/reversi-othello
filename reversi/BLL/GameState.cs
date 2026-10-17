@@ -3,11 +3,13 @@ namespace BLL;
 public class GameState
 {
     private readonly ECellPiece[,] _board;
+    public GameConfiguration Config;
     public bool IsCurrentPlayerDark { get; private set; } = true;
 
-    public GameState(int boardWidth, int boardHeight)
+    public GameState(int boardWidth, int boardHeight, GameConfiguration config)
     {
         _board =  new ECellPiece[boardWidth, boardHeight];
+        Config = config;
     }
 
     public void PlacePiece(int column, int row, ECellPiece piece)

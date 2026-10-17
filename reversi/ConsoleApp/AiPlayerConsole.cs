@@ -1,6 +1,8 @@
-namespace BLL;
+using BLL;
 
-public class AiPlayer : IPlayer
+namespace ConsoleApp;
+
+public class AiPlayerConsole : IPlayer
 {
     public string Name { get; } = "AI player";
     private readonly Random _random = new();
