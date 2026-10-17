@@ -8,7 +8,7 @@ public class GameBrain
     private int CurrentPlayerIndex { get; set; }
     private int NoValidMovesCount { get; set; }
     private (int, int)[] ValidFirst4Moves { get; } = new (int, int)[4];
-    private EGameStatus GameStatus { get; set; }
+    public EGameStatus GameStatus { get; private set; }
 
     public GameBrain(IPlayer[] players)
         : this(new GameConfiguration(), players)
@@ -85,25 +85,15 @@ public class GameBrain
 
         if (!IsPiecesCountAtLeast4())
         {
-            if (ValidFirst4Moves.Contains((column, row)))
-            {
-                _state.PlacePiece(column, row, currentPLayer);
-                return true;
-            }
-
-            return false;
+            return Initial4CenterCellsPlacement(column, row, currentPLayer);
         }
 
         for (var directionIndex = 0; directionIndex < 8; directionIndex++)
         {
             var (dirX, dirY) = GetDirection(directionIndex);
 
-            var nextX = column;
-            var nextY = row;
-
-            // TODO: glue previous and next lines together (after writing unit tests)
-            nextX += dirX;
-            nextY += dirY;
+            var nextX = column + dirX;
+            var nextY = row + dirY;
 
             if (!IsCellCoordinateOnBoard(nextX, nextY)) continue;
 
@@ -127,9 +117,7 @@ public class GameBrain
             {
                 if (positions.Count > 0)
                 {
-                    _state.PlacePiece(column, row, currentPLayer);
-                    FlipPieces(positions);
-
+                    ChangeBoard(column, row, currentPLayer, positions);
                     isMoveValid = true;
                 }
             }
@@ -138,6 +126,23 @@ public class GameBrain
         }
 
         return isMoveValid;
+    }
+
+    private void ChangeBoard(int column, int row, ECellPiece currentPLayer, List<(int, int)> positions)
+    {
+        _state.PlacePiece(column, row, currentPLayer);
+        FlipPieces(positions);
+    }
+
+    private bool Initial4CenterCellsPlacement(int column, int row, ECellPiece currentPLayer)
+    {
+        if (ValidFirst4Moves.Contains((column, row)))
+        {
+            _state.PlacePiece(column, row, currentPLayer);
+            return true;
+        }
+
+        return false;
     }
 
     private bool IsValidMove(int column, int row)
