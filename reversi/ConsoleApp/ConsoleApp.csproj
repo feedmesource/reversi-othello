@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\BLL\BLL.csproj" />
+      <ProjectReference Include="..\DAL\DAL.csproj" />
       <ProjectReference Include="..\Menusystem\Menusystem.csproj" />
       <ProjectReference Include="..\Ui\Ui.csproj" />
     </ItemGroup>
