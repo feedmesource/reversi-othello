@@ -11,7 +11,7 @@ public class GameController
     public GameController(GameConfiguration config)
     {
         Config = config;
-        Brain = new GameBrain(Config, [new HumanPlayerConsole("Player 1"), new AiPlayerConsole()]);
+        Brain = new GameBrain(Config, Variables.Players);
     }
 
     public void GameLoop()

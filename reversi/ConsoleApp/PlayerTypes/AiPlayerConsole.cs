@@ -1,6 +1,6 @@
 using BLL;
 
-namespace ConsoleApp;
+namespace ConsoleApp.PlayerTypes;
 
 public class AiPlayerConsole : IPlayer
 {
