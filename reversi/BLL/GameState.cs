@@ -2,8 +2,9 @@ namespace BLL;
 
 public class GameState
 {
+    public Guid Id = Guid.NewGuid();
     private readonly ECellPiece[,] _board;
-    public GameConfiguration Config;
+    public readonly GameConfiguration Config;
     public bool IsCurrentPlayerDark { get; private set; } = true;
 
     public GameState(int boardWidth, int boardHeight, GameConfiguration config)
@@ -41,6 +42,22 @@ public class GameState
             for (var j = 0; j < _board.GetLength(1); j++)
             {
                 if (_board[i, j] == ECellPiece.Empty)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public bool IsBoardEmpty()
+    {
+        for (var i = 0; i < _board.GetLength(0); i++)
+        {
+            for (var j = 0; j < _board.GetLength(1); j++)
+            {
+                if (_board[i, j] != ECellPiece.Empty)
                 {
                     return false;
                 }

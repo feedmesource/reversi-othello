@@ -37,6 +37,11 @@ public class GameBrain
         }
     }
 
+    public bool IsInitialReversiBoard()
+    {
+        return !_state.Config.IsOthello && !IsPiecesCountAtLeast4();
+    }
+
     public void PlacePiece(int column, int row)
     {
         if (!IsCellCoordinateOnBoard(column, row)) throw new ArgumentException("No such coordinate");
@@ -213,15 +218,38 @@ public class GameBrain
     {
         var validMoves = new HashSet<(int, int)>();
 
-        foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
+        if (!IsPiecesCountAtLeast4())
         {
-            if (_state.GetCellState(column, row) == ECellPiece.Empty && IsValidMove(column, row))
-            {
-                validMoves.Add((column, row));
-            }
+            return AllValidMovesInCenter4Cells();
         }
 
-        return validMoves;
+        return AllValidMovesDefault();
+        
+        HashSet<(int, int)> AllValidMovesInCenter4Cells()
+        {
+            foreach (var (column, row) in ValidFirst4Moves)
+            {
+                if (_state.GetCellState(column, row) == ECellPiece.Empty)
+                {
+                    validMoves.Add((column, row));
+                }
+            }
+
+            return validMoves;
+        }
+
+        HashSet<(int, int)> AllValidMovesDefault()
+        {
+            foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
+            {
+                if (_state.GetCellState(column, row) == ECellPiece.Empty && IsValidMove(column, row))
+                {
+                    validMoves.Add((column, row));
+                }
+            }
+
+            return validMoves;
+        }
     }
 
 

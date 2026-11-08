@@ -5,6 +5,7 @@
   </Folder>
   <Project Path="BLL/BLL.csproj" />
   <Project Path="ConsoleApp/ConsoleApp.csproj" />
+  <Project Path="DAL/DAL.csproj" />
   <Project Path="Menusystem/Menusystem.csproj" />
   <Project Path="Ui/Ui.csproj" />
 </Solution>

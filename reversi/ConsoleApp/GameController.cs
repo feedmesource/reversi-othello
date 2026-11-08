@@ -27,7 +27,7 @@ public class GameController
             Brain.GameEndCheckMethods();
             var isWon = Brain.IsGameOver();
             
-            if (!isWon && !Brain.IsValidMoves())
+            if (!isWon && !Brain.IsValidMoves() && !Brain.IsInitialReversiBoard())
             {
                 Console.WriteLine("No valid moves!");
                 Console.Write("This turn will be skipped. \nPress Enter:");
