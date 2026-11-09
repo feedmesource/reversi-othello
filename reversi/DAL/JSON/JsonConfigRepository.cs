@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using BLL;
 using BLL.Contracts;
 
@@ -7,42 +6,61 @@ namespace DAL.JSON;
 
 public class JsonConfigRepository : IConfigRepository
 {
-    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
-    {
-        WriteIndented = true, // pretty print files a human will open
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // "boardWidth" instead of "BoardWidth"
-        PropertyNameCaseInsensitive = true, // accept either when reading
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, // skip properties that are null
-        AllowTrailingCommas = true, // tolerate hand-edited files
-        Converters = { new JsonStringEnumConverter() }, // enums as "X", not 1
-    };
+    private static readonly JsonSerializerOptions Options = DalHelpers.Options;
 
     public void Save(GameConfiguration config)
     {
-        var dir = FileSystemHelpers.GetConfigsPath();
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
+        DalHelpers.CreateDirectoryIfNotExists(DalHelpers.GetConfigsPath());
 
-        var fileName = FileSystemHelpers.GetConfigFileName(config.Id);
+        var fileName = DalHelpers.GetConfigFileName(config.Id);
         var json = JsonSerializer.Serialize(config, Options);
 
-        FileSystemHelpers.WriteAtomic(fileName, json);
+        DalHelpers.WriteAtomic(fileName, json);
     }
 
-    public GameConfiguration Load(string id)
+    public GameConfiguration? Load(Guid id)
     {
-        throw new NotImplementedException();
+        DalHelpers.CreateDirectoryIfNotExists(DalHelpers.GetConfigsPath());
+
+        var path = DalHelpers.GetConfigsPath();
+        var files = Directory.GetFiles(path, $"config-{id}.json");
+
+        var file = files.SingleOrDefault();
+
+        if (file == null) return null;
+
+        var gameConfig = JsonSerializer.Deserialize<GameConfiguration>(file, Options);
+
+        return gameConfig;
     }
 
     public List<GameConfiguration> LoadAll()
     {
-        throw new NotImplementedException();
+        DalHelpers.CreateDirectoryIfNotExists(DalHelpers.GetConfigsPath());
+
+        var gameConfigs = new List<GameConfiguration>();
+
+        var path = DalHelpers.GetConfigsPath();
+        var files = Directory.GetFiles(path, "config-*.json");
+        foreach (var file in files)
+        {
+            var fileContent = File.ReadAllText(file);
+            var config = JsonSerializer.Deserialize<GameConfiguration>(fileContent, Options);
+            if (config != null) gameConfigs.Add(config);
+        }
+
+        return gameConfigs;
     }
 
-    public void Delete(string id)
+    public void Delete(Guid id)
     {
-        throw new NotImplementedException();
+        DalHelpers.CreateDirectoryIfNotExists(DalHelpers.GetConfigsPath());
+
+        var path = DalHelpers.GetConfigsPath();
+        var files = Directory.GetFiles(path, $"config-{id}.json");
+
+        var file = files.SingleOrDefault();
+
+        if (file != null) File.Delete(file);
     }
 }

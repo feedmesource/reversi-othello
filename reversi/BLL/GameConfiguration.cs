@@ -31,4 +31,9 @@ public record GameConfiguration(
         : this(Guid.NewGuid(), 8, 8, isOthello, haveWalls)
     {
     }
+
+    public override string ToString()
+    {
+        return $"{(IsOthello ? "Othello" : "Reversi")} {BoardWidth}x{BoardHeight} {(HaveWalls ? "with walls" : "")}";
+    }
 }

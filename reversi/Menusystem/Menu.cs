@@ -4,14 +4,13 @@ public class Menu
 {
     private string Title { get; set; }
     private EMenuLevel Level { get; set; }
+    private Dictionary<string, MenuItem> MenuItems { get; set; } = [];
 
     public Menu(string title, EMenuLevel level)
     {
         Title = title;
         Level = level;
     }
-
-    private Dictionary<string, MenuItem> MenuItems { get; set; } = [];
 
     public void AddMenuItem(MenuItem item)
     {

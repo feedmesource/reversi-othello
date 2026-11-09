@@ -17,14 +17,11 @@ public static class ConsoleUi
                 case <= 8:
                     Console.Write("  " + (y + 1) + " ");
                     break;
-                case <= 98:
+                case <= 97:
                     Console.Write(" " + (y + 1) + " ");
                     break;
-                case <= 998:
-                    Console.Write((y + 1) + " ");
-                    break;
                 default:
-                    throw new IndexOutOfRangeException("board width and height should be maximum 999");
+                    throw new IndexOutOfRangeException("board width and height should be maximum 98");
             }
 
             for (var x = 0; x < board.GetLength(0); x++)

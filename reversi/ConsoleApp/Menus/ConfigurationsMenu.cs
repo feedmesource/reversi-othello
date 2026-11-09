@@ -20,6 +20,9 @@ public static class ConfigurationsMenu
         menu2.AddMenuItem(new MenuItem("a", "add configuration",
             AddConfiguration));
 
+        menu2.AddMenuItem(new MenuItem("d", "delete configuration",
+            DeleteConfiguration));
+
         return menu2.Run();
     }
 
@@ -53,9 +56,31 @@ public static class ConfigurationsMenu
             return "b";
         }));
 
-        var returnValue = menu.Run();
+        LoadFromRepository(menu);
 
-        return returnValue;
+        menu.Run();
+
+        return "";
+    }
+
+    private static void LoadFromRepository(Menu menu)
+    {
+        var gameConfigs = ConfigRepo.LoadAll();
+
+        var count = menu.GetMenuItems().Count;
+
+        foreach (var config in gameConfigs)
+        {
+            count++;
+
+            menu.AddMenuItem(
+                new MenuItem(count.ToString(), config.ToString(), () =>
+                {
+                    Variables.Config = config;
+                    return "b";
+                })
+            );
+        }
     }
 
     private static string AddConfiguration()
@@ -68,17 +93,14 @@ public static class ConfigurationsMenu
         var reversiOrOthello = ValidateTextInputs("reversi/othello (r/o)", ["r", "o"]);
         var hasWallsOrNot = ValidateTextInputs("has walls (y/n)", ["y", "n"]);
 
-        bool isOthello;
-        bool hasWalls;
-
-        isOthello = reversiOrOthello switch
+        var isOthello = reversiOrOthello switch
         {
             "r" => false,
             "o" => true,
             _ => throw new ArgumentException("""input not "r" or "o" """)
         };
 
-        hasWalls = hasWallsOrNot switch
+        var hasWalls = hasWallsOrNot switch
         {
             "y" => true,
             "n" => false,
@@ -92,7 +114,7 @@ public static class ConfigurationsMenu
         Console.Write("saved!");
         Console.ReadLine();
 
-        return "b";
+        return "";
 
         int ValidateInputWidthHeight(string promptString)
         {
@@ -117,9 +139,9 @@ public static class ConfigurationsMenu
                     continue;
                 }
 
-                if (parsedInt is < 4 or > 999)
+                if (parsedInt is < 4 or > 98)
                 {
-                    errorMessage = "board dimensions must be between 4 and 999!";
+                    errorMessage = "board dimensions must be between 4 and 98!";
                     continue;
                 }
 
@@ -138,7 +160,6 @@ public static class ConfigurationsMenu
         string ValidateTextInputs(string promptString, string[] validInputs)
         {
             string? errorMessage = default;
-            string? userInput;
 
             while (true)
             {
@@ -148,7 +169,7 @@ public static class ConfigurationsMenu
                 }
 
                 Console.Write($"{promptString}: ");
-                userInput = Console.ReadLine();
+                var userInput = Console.ReadLine();
                 var valid = true;
 
                 foreach (var validInput in validInputs)
@@ -170,6 +191,38 @@ public static class ConfigurationsMenu
                     return userInput ?? "";
                 }
             }
+        }
+    }
+
+    private static string DeleteConfiguration()
+    {
+        var menu = new Menu(
+            $"Delete configuration",
+            EMenuLevel.Deep);
+
+        LoadFromRepositoryToDelete(menu);
+
+        menu.Run();
+        return "";
+    }
+
+    private static void LoadFromRepositoryToDelete(Menu menu)
+    {
+        var gameConfigs = ConfigRepo.LoadAll();
+
+        var count = menu.GetMenuItems().Count;
+
+        foreach (var config in gameConfigs)
+        {
+            count++;
+
+            menu.AddMenuItem(
+                new MenuItem(count.ToString(), config.ToString(), () =>
+                {
+                    ConfigRepo.Delete(config.Id);
+                    return "b";
+                })
+            );
         }
     }
 }
