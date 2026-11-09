@@ -1,6 +1,6 @@
 using BLL;
 
-namespace DAL.Json;
+namespace DAL.JSON.DTO;
 
 public class GameStateDto
 {

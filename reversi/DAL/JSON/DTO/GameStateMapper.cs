@@ -1,7 +1,6 @@
 using BLL;
-using DAL.Json;
 
-namespace DAL.JSON;
+namespace DAL.JSON.DTO;
 
 public static class GameStateMapper
 {
