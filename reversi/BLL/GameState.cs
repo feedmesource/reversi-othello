@@ -13,6 +13,14 @@ public class GameState
         Config = config;
     }
 
+    public GameState(Guid id, ECellPiece[,] board, GameConfiguration config, bool isCurrentPlayerDark)
+    {
+        Id = id;
+        _board = board;
+        Config = config;
+        IsCurrentPlayerDark = isCurrentPlayerDark;
+    }
+
     public void PlacePiece(int column, int row, ECellPiece piece)
     {
         _board[column, row] = piece;
