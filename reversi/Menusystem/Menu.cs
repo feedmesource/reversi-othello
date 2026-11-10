@@ -14,11 +14,7 @@ public class Menu
 
     public void AddMenuItem(MenuItem item)
     {
-        if (!MenuItems.ContainsKey(item.Label))
-        {
-            MenuItems.Add(item.Label, item);
-        }
-        else
+        if (!MenuItems.TryAdd(item.Label, item))
         {
             throw new ArgumentException($"MenuItem {item.Label} is already in the menu");
         }
@@ -34,10 +30,8 @@ public class Menu
         AddDefaultMenuItems();
 
         var errorMessage = "";
-        var userChoice = "";
 
-        var isMenuDone = false;
-        while (!isMenuDone)
+        while (true)
         {
             Console.Clear();
             DisplayMenu();
@@ -45,7 +39,7 @@ public class Menu
             Console.WriteLine(errorMessage);
             errorMessage = "";
             Console.Write("Choose: ");
-            userChoice = Console.ReadLine()?.ToLower();
+            var userChoice = Console.ReadLine()?.ToLower();
 
             if (userChoice == null || !MenuItems.ContainsKey(userChoice))
             {
@@ -64,7 +58,6 @@ public class Menu
                     return "";
             }
         }
-        return userChoice ?? "";
     }
 
     private void DisplayMenu()
