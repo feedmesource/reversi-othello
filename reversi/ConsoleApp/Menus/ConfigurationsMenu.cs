@@ -58,9 +58,7 @@ public static class ConfigurationsMenu
 
         LoadFromRepository(menu);
 
-        menu.Run();
-
-        return "";
+        return menu.Run();
     }
 
     private static void LoadFromRepository(Menu menu)

@@ -1,19 +1,13 @@
-using BLL;
+using BLL.Contracts;
 
 namespace ConsoleApp.PlayerTypes;
 
-public class HumanPlayerConsole : IPlayer
+public class HumanConsoleMoveProvider : IMoveProvider
 {
-    public string Name { get; }
-
-    public HumanPlayerConsole(string name)
-    {
-        Name = name;
-    }
-    public (int column, int row)? GetMove(HashSet<(int x, int y)> allowedMoves)
+    public (int column, int row)? GetMove(IPlayer player, HashSet<(int x, int y)> allowedMoves)
     {
         Console.Write("Choose coordinates (x,y): ");
-        
+
         var coordinateChoice = Console.ReadLine();
 
         if (coordinateChoice == null)
@@ -31,6 +25,9 @@ public class HumanPlayerConsole : IPlayer
             return null;
 
         var coordinates = (--column, --row);
+
+        if (!allowedMoves.Contains(coordinates))
+            throw new ArgumentException("Invalid move");
 
         return coordinates;
     }

@@ -1,13 +1,12 @@
-using BLL;
+using BLL.Contracts;
 
 namespace ConsoleApp.PlayerTypes;
 
-public class AiPlayerConsole : IPlayer
+public class AiConsoleMoveProvider : IMoveProvider
 {
-    public string Name { get; } = "AI player";
     private readonly Random _random = new();
     
-    public (int column, int row)? GetMove(HashSet<(int x, int y)> allowedMoves)
+    public (int column, int row)? GetMove(IPlayer player, HashSet<(int x, int y)> allowedMoves)
     {
 
         Console.WriteLine("AI turn to make move");

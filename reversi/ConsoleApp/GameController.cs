@@ -58,7 +58,20 @@ public class GameController
                 break;
             }
 
-            if (!GetUserInput(out var coordinates))
+            bool userInput;
+            (int, int) coordinates;
+
+            try
+            {
+                userInput = GetUserInput(out coordinates);
+            }
+            catch (ArgumentException e)
+            {
+                errorMessage = e.Message;
+                continue;
+            }
+
+            if (!userInput)
             {
                 errorMessage = "Not valid input";
                 continue;
@@ -83,9 +96,11 @@ public class GameController
 
     private bool GetUserInput(out (int, int) coordinates)
     {
+        var providerFactory = new MoveProviderFactory();
         var currentPlayer = Brain.GetCurrentPlayer();
+        var moveProvider = providerFactory.GetProvider(currentPlayer);
 
-        var coordinateChoice = currentPlayer.GetMove(Brain.GetAllValidMoves());
+        var coordinateChoice = moveProvider.GetMove(currentPlayer, Brain.GetAllValidMoves());
 
         coordinates = default;
 

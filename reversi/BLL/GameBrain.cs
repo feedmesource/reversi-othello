@@ -1,4 +1,6 @@
-﻿namespace BLL;
+﻿using BLL.Contracts;
+
+namespace BLL;
 
 public class GameBrain
 {
@@ -26,7 +28,7 @@ public class GameBrain
         ValidFirst4Moves[2] = (positionX, positionY + 1);
         ValidFirst4Moves[3] = (positionX + 1, positionY + 1);
 
-        if (State.Config.IsOthello)
+        if (State.Config.IsOthello && !IsPiecesCountAtLeast4())
         {
             foreach (var (column, row) in ValidFirst4Moves)
             {

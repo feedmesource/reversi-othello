@@ -1,3 +1,5 @@
+using BLL.Contracts;
+
 namespace BLL;
 
 public record GameConfiguration(

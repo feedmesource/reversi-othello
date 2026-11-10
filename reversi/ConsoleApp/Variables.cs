@@ -1,5 +1,6 @@
 using BLL;
-using ConsoleApp.PlayerTypes;
+using BLL.Contracts;
+using BLL.PlayerTypes;
 
 namespace ConsoleApp;
 
@@ -10,7 +11,7 @@ public static class Variables
 
     static Variables()
     {
-        Players = [new HumanPlayerConsole("Player 1"), new AiPlayerConsole()];
+        Players = [new HumanPlayer("Player 1"), new AiPlayer()];
         Config = new GameConfiguration(Players);
     }
 }

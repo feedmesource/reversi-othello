@@ -40,8 +40,7 @@ public static class MainMenuItems
                 counter++;
             }
 
-            menu.Run();
-            return "b";
+            return menu.Run();
         }),
         new MenuItem("s", "settings", SettingsMenu.Menu)
     ];
