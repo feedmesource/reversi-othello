@@ -19,7 +19,7 @@ public class GameBrain
     public GameBrain(GameState state)
     {
         State = state;
-        CurrentPlayerIndex = 0;
+        CurrentPlayerIndex = IsCurrentPlayerDark ? 0 : 1;
 
         var positionX = State.Config.BoardWidth / 2 - 1; // -1 because of 0-indexing
         var positionY = State.Config.BoardHeight / 2 - 1; // -1 because of 0-indexing
