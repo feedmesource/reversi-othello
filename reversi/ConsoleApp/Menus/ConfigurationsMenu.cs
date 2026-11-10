@@ -34,25 +34,25 @@ public static class ConfigurationsMenu
 
         menu.AddMenuItem(new MenuItem("1", "Classical Reversi: 8x8", () =>
         {
-            Variables.Config = new GameConfiguration();
+            Variables.Config = new GameConfiguration(Variables.Players);
             return "b";
         }));
 
         menu.AddMenuItem(new MenuItem("2", "Mini Reversi: 6x6", () =>
         {
-            Variables.Config = new GameConfiguration(6, 6);
+            Variables.Config = new GameConfiguration(6, 6, Variables.Players);
             return "b";
         }));
 
         menu.AddMenuItem(new MenuItem("3", "Classical Othello: 8x8", () =>
         {
-            Variables.Config = new GameConfiguration(true);
+            Variables.Config = new GameConfiguration(Variables.Players, true);
             return "b";
         }));
 
         menu.AddMenuItem(new MenuItem("4", "Mini Othello: 6x6", () =>
         {
-            Variables.Config = new GameConfiguration(6, 6, true);
+            Variables.Config = new GameConfiguration(6, 6, Variables.Players, true);
             return "b";
         }));
 
@@ -107,7 +107,7 @@ public static class ConfigurationsMenu
             _ => throw new ArgumentException("""input not "y" or "n" """)
         };
 
-        var config = new GameConfiguration(width, height, isOthello, hasWalls);
+        var config = new GameConfiguration(width, height, Variables.Players, isOthello, hasWalls);
 
         ConfigRepo.Save(config);
 

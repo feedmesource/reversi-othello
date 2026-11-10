@@ -18,10 +18,11 @@ public static class GameStateMapper
         dto.Id,
         JaggedIntoTwoDimensionalArray(dto.Board),
         dto.Config,
-        dto.IsCurrentPlayerDark
+        dto.IsCurrentPlayerDark,
+        dto.SavedAtUtc
     );
 
-    public static T[][] TwoDimensionalIntoJaggedArray<T>(T[,] inputArray)
+    private static T[][] TwoDimensionalIntoJaggedArray<T>(T[,] inputArray)
     {
         var jaggedArray = new T[inputArray.GetLength(0)][];
 
@@ -39,7 +40,7 @@ public static class GameStateMapper
         return jaggedArray;
     }
 
-    public static T[,] JaggedIntoTwoDimensionalArray<T>(T[][] inputArray)
+    private static T[,] JaggedIntoTwoDimensionalArray<T>(T[][] inputArray)
     {
         var twoDimensionalArray = new T[inputArray.Length, inputArray[0].Length];
 
@@ -47,7 +48,7 @@ public static class GameStateMapper
         {
             for (var y = 0; y < inputArray[x].Length; y++)
             {
-                twoDimensionalArray[x,y] = inputArray[x][y];
+                twoDimensionalArray[x, y] = inputArray[x][y];
             }
         }
 

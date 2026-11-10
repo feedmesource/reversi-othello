@@ -1,4 +1,6 @@
 using BLL;
+using BLL.Contracts;
+using DAL.JSON;
 using Ui;
 
 namespace ConsoleApp;
@@ -7,11 +9,17 @@ public class GameController
 {
     private GameBrain Brain { get; set; }
     private GameConfiguration Config { get; set; }
-    
+
     public GameController(GameConfiguration config)
     {
         Config = config;
-        Brain = new GameBrain(Config, Variables.Players);
+        Brain = new GameBrain(Config);
+    }
+
+    public GameController(GameBrain brain)
+    {
+        Brain = brain;
+        Config = brain.State.Config;
     }
 
     public void GameLoop()
@@ -23,10 +31,10 @@ public class GameController
             ConsoleUi.DrawBoard(Brain.GetBoard());
             Console.WriteLine(errorMessage);
             errorMessage = "";
-            
+
             Brain.GameEndCheckMethods();
             var isWon = Brain.IsGameOver();
-            
+
             if (!isWon && !Brain.IsValidMoves() && !Brain.IsInitialReversiBoard())
             {
                 Console.WriteLine("No valid moves!");
@@ -43,7 +51,7 @@ public class GameController
             else
             {
                 var winner = GameBrain.GetWinner(Brain.GameStatus);
-                
+
                 Console.WriteLine(GetWinnerString(winner));
                 Console.Write("Press enter to exit the game:");
                 Console.Read();
@@ -66,7 +74,10 @@ public class GameController
             catch (ArgumentException e)
             {
                 errorMessage = e.Message;
-            } 
+            }
+
+            IGameRepository gameRepo = new JsonGameRepository();
+            gameRepo.Save(Brain.State);
         }
     }
 
@@ -75,14 +86,15 @@ public class GameController
         var currentPlayer = Brain.GetCurrentPlayer();
 
         var coordinateChoice = currentPlayer.GetMove(Brain.GetAllValidMoves());
-        
+
         coordinates = default;
 
         if (coordinateChoice != null)
         {
-            coordinates = ((int, int)) coordinateChoice;
+            coordinates = ((int, int))coordinateChoice;
             return true;
         }
+
         return false;
     }
 

@@ -1,3 +1,6 @@
+using BLL;
+using BLL.Contracts;
+using DAL.JSON;
 using MenuSystem;
 
 namespace ConsoleApp.Menus;
@@ -5,7 +8,7 @@ namespace ConsoleApp.Menus;
 public static class MainMenuItems
 {
     private static readonly Func<string> DummyMethod = Dummies.DummyMethod;
-    
+
     public static readonly List<MenuItem> MenuItems =
     [
         new MenuItem("n", "new game", () =>
@@ -16,7 +19,30 @@ public static class MainMenuItems
             }
         ),
 
-        new MenuItem("l", "load game", DummyMethod),
+        new MenuItem("l", "load game", () =>
+        {
+            var menu = new Menu("Load Game", EMenuLevel.Second);
+
+            IGameRepository gameRepo = new JsonGameRepository();
+            var games = gameRepo.LoadAll();
+
+            var counter = 1;
+            foreach (var gameState in games)
+            {
+                menu.AddMenuItem(new MenuItem($"{counter}", $"{gameState.SavedAtUtc.ToLocalTime()}",
+                    () =>
+                    {
+                        var brain = new GameBrain(gameState);
+                        var controller = new GameController(brain);
+                        controller.GameLoop();
+                        return "b";
+                    }));
+                counter++;
+            }
+
+            menu.Run();
+            return "b";
+        }),
         new MenuItem("s", "settings", SettingsMenu.Menu)
     ];
 }

@@ -4,10 +4,9 @@ namespace DAL.JSON.DTO;
 
 public class GameStateDto
 {
-    public Guid Id { get; set; }
-    public ECellPiece[][] Board { get; set; } = [];
-    public required GameConfiguration Config { get; set; }
-    public bool IsCurrentPlayerDark { get; set; }
-    public DateTime SavedAtUtc { get; set; }
+    public Guid Id { get; init; }
+    public ECellPiece[][] Board { get; init; } = [];
+    public required GameConfiguration Config { get; init; }
+    public bool IsCurrentPlayerDark { get; init; }
+    public DateTime SavedAtUtc { get; init; }
 }
-

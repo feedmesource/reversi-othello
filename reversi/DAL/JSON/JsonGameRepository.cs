@@ -32,9 +32,12 @@ public class JsonGameRepository : IGameRepository
 
         if (file == null) return null;
 
-        var gameConfig = JsonSerializer.Deserialize<GameState>(file, Options);
+        var dto = JsonSerializer.Deserialize<GameStateDto>(file, Options)
+                  ?? throw new JsonException("Configuration JSON was null.");
 
-        return gameConfig;
+        var state = GameStateMapper.ToDomain(dto);
+
+        return state;
     }
 
     public List<GameState> LoadAll()
@@ -48,8 +51,10 @@ public class JsonGameRepository : IGameRepository
         foreach (var file in files)
         {
             var fileContent = File.ReadAllText(file);
-            var config = JsonSerializer.Deserialize<GameState>(fileContent, Options);
-            if (config != null) games.Add(config);
+            var dto = JsonSerializer.Deserialize<GameStateDto>(fileContent, Options)
+                      ?? throw new JsonException("Configuration JSON was null.");
+            var state = GameStateMapper.ToDomain(dto);
+            games.Add(state);
         }
 
         return games;

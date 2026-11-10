@@ -24,7 +24,7 @@ public static class DalHelpers
     {
         var temp = path + ".tmp";
         File.WriteAllText(temp, content);
-        File.Move(temp, path);
+        File.Move(temp, path, overwrite: true);
     }
 
     public static readonly JsonSerializerOptions Options = new JsonSerializerOptions

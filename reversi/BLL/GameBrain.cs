@@ -2,33 +2,31 @@
 
 public class GameBrain
 {
-    private readonly GameState _state;
-    public bool IsCurrentPlayerDark => _state.IsCurrentPlayerDark;
-    private IPlayer[] Players { get; }
+    public readonly GameState State;
+    public bool IsCurrentPlayerDark => State.IsCurrentPlayerDark;
     private int CurrentPlayerIndex { get; set; }
     private int NoValidMovesCount { get; set; }
     private (int, int)[] ValidFirst4Moves { get; } = new (int, int)[4];
     public EGameStatus GameStatus { get; private set; }
 
-    public GameBrain(IPlayer[] players)
-        : this(new GameConfiguration(), players)
+    public GameBrain(GameConfiguration config)
+        : this(new GameState(config.BoardWidth, config.BoardHeight, config))
     {
     }
-    
-    public GameBrain(GameConfiguration config, IPlayer[] players)
+
+    public GameBrain(GameState state)
     {
-        _state = new GameState(config.BoardWidth, config.BoardHeight, config);
-        Players = players;
+        State = state;
         CurrentPlayerIndex = 0;
 
-        var positionX = _state.Config.BoardWidth / 2 - 1; // -1 because of 0-indexing
-        var positionY = _state.Config.BoardHeight / 2 - 1; // -1 because of 0-indexing
+        var positionX = State.Config.BoardWidth / 2 - 1; // -1 because of 0-indexing
+        var positionY = State.Config.BoardHeight / 2 - 1; // -1 because of 0-indexing
         ValidFirst4Moves[0] = (positionX + 1, positionY);
         ValidFirst4Moves[1] = (positionX, positionY);
         ValidFirst4Moves[2] = (positionX, positionY + 1);
         ValidFirst4Moves[3] = (positionX + 1, positionY + 1);
 
-        if (_state.Config.IsOthello)
+        if (State.Config.IsOthello)
         {
             foreach (var (column, row) in ValidFirst4Moves)
             {
@@ -39,7 +37,7 @@ public class GameBrain
 
     public bool IsInitialReversiBoard()
     {
-        return !_state.Config.IsOthello && !IsPiecesCountAtLeast4();
+        return !State.Config.IsOthello && !IsPiecesCountAtLeast4();
     }
 
     public void PlacePiece(int column, int row)
@@ -47,7 +45,7 @@ public class GameBrain
         if (!IsCellCoordinateOnBoard(column, row)) throw new ArgumentException("No such coordinate");
         // LastMove = (column, row);
 
-        if (_state.GetCellState(column, row) != ECellPiece.Empty)
+        if (State.GetCellState(column, row) != ECellPiece.Empty)
             throw new ArgumentException("There is a piece already in that position");
 
         var moveMade = TryMakeMove(column, row);
@@ -76,13 +74,13 @@ public class GameBrain
 
     private bool IsCellCoordinateOnBoard(int x, int y)
     {
-        return x >= 0 && x < _state.Config.BoardWidth && y >= 0 && y < _state.Config.BoardHeight;
+        return x >= 0 && x < State.Config.BoardWidth && y >= 0 && y < State.Config.BoardHeight;
     }
 
 
     private bool TryMakeMove(int column, int row)
     {
-        var currentPLayer = _state.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
+        var currentPLayer = State.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
         var isMoveValid = false;
 
@@ -104,7 +102,7 @@ public class GameBrain
 
             do
             {
-                if (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
+                if (State.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
                     positions.Add((nextX, nextY));
                 else
                     break;
@@ -114,11 +112,11 @@ public class GameBrain
 
                 if (!IsCellCoordinateOnBoard(nextX, nextY))
                     break;
-            } while (_state.GetCellState(nextX, nextY) != currentPLayer ||
-                     _state.GetCellState(nextX, nextY) != ECellPiece.Empty);
+            } while (State.GetCellState(nextX, nextY) != currentPLayer ||
+                     State.GetCellState(nextX, nextY) != ECellPiece.Empty);
 
 
-            if (IsCellCoordinateOnBoard(nextX, nextY) && _state.GetCellState(nextX, nextY) == currentPLayer)
+            if (IsCellCoordinateOnBoard(nextX, nextY) && State.GetCellState(nextX, nextY) == currentPLayer)
             {
                 if (positions.Count > 0)
                 {
@@ -135,7 +133,7 @@ public class GameBrain
 
     private void ChangeBoard(int column, int row, ECellPiece currentPLayer, List<(int, int)> positions)
     {
-        _state.PlacePiece(column, row, currentPLayer);
+        State.PlacePiece(column, row, currentPLayer);
         FlipPieces(positions);
     }
 
@@ -143,7 +141,7 @@ public class GameBrain
     {
         if (ValidFirst4Moves.Contains((column, row)))
         {
-            _state.PlacePiece(column, row, currentPLayer);
+            State.PlacePiece(column, row, currentPLayer);
             return true;
         }
 
@@ -152,7 +150,7 @@ public class GameBrain
 
     private bool IsValidMove(int column, int row)
     {
-        ECellPiece currentPLayer = _state.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
+        ECellPiece currentPLayer = State.IsCurrentPlayerDark ? ECellPiece.Dark : ECellPiece.Light;
 
         var positions = new List<(int, int)>();
 
@@ -169,7 +167,7 @@ public class GameBrain
 
             do
             {
-                if (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
+                if (State.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer))
                     positions.Add((nextX, nextY));
                 else
                     break;
@@ -178,10 +176,10 @@ public class GameBrain
                 nextY += dirY;
 
                 if (!IsCellCoordinateOnBoard(nextX, nextY)) break;
-            } while (_state.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer));
+            } while (State.GetCellState(nextX, nextY) == FlipPlayer(currentPLayer));
 
 
-            if (IsCellCoordinateOnBoard(nextX, nextY) && _state.GetCellState(nextX, nextY) == currentPLayer)
+            if (IsCellCoordinateOnBoard(nextX, nextY) && State.GetCellState(nextX, nextY) == currentPLayer)
             {
                 if (positions.Count > 0)
                     return true;
@@ -202,7 +200,7 @@ public class GameBrain
     {
         foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
         {
-            var cell = _state.GetCellState(column, row);
+            var cell = State.GetCellState(column, row);
             if (cell == ECellPiece.Empty && IsValidMove(column, row))
             {
                 NoValidMovesCount = 0;
@@ -224,12 +222,12 @@ public class GameBrain
         }
 
         return AllValidMovesDefault();
-        
+
         HashSet<(int, int)> AllValidMovesInCenter4Cells()
         {
             foreach (var (column, row) in ValidFirst4Moves)
             {
-                if (_state.GetCellState(column, row) == ECellPiece.Empty)
+                if (State.GetCellState(column, row) == ECellPiece.Empty)
                 {
                     validMoves.Add((column, row));
                 }
@@ -242,7 +240,7 @@ public class GameBrain
         {
             foreach (var (column, row) in GetEmptyCellCoordinates().ToArray())
             {
-                if (_state.GetCellState(column, row) == ECellPiece.Empty && IsValidMove(column, row))
+                if (State.GetCellState(column, row) == ECellPiece.Empty && IsValidMove(column, row))
                 {
                     validMoves.Add((column, row));
                 }
@@ -257,7 +255,7 @@ public class GameBrain
     {
         foreach (var (x, y) in positions)
         {
-            _state.PlacePiece(x, y, FlipPlayer(_state.GetCellState(x, y)));
+            State.PlacePiece(x, y, FlipPlayer(State.GetCellState(x, y)));
         }
     }
 
@@ -276,7 +274,7 @@ public class GameBrain
     {
         var piecesCount = 0;
 
-        foreach (var cell in _state.GetBoard())
+        foreach (var cell in State.GetBoard())
         {
             if (cell != ECellPiece.Empty)
                 piecesCount++;
@@ -292,7 +290,7 @@ public class GameBrain
         var darkCount = 0;
         var lightCount = 0;
 
-        foreach (var cell in _state.GetBoard())
+        foreach (var cell in State.GetBoard())
         {
             switch (cell)
             {
@@ -359,17 +357,17 @@ public class GameBrain
 
     public void SwitchPlayer()
     {
-        _state.SwitchPlayer();
+        State.SwitchPlayer();
         CurrentPlayerIndex = ++CurrentPlayerIndex % 2;
     }
 
     public IPlayer GetCurrentPlayer()
     {
-        return Players[CurrentPlayerIndex];
+        return State.Config.Players[CurrentPlayerIndex];
     }
 
-    public ECellPiece[,] GetBoard() => _state.GetBoard();
-    private bool IsBoardFull() => _state.IsBoardFull();
+    public ECellPiece[,] GetBoard() => State.GetBoard();
+    private bool IsBoardFull() => State.IsBoardFull();
 
-    private HashSet<(int, int)> GetEmptyCellCoordinates() => _state.GetEmptyCellCoordinates();
+    private HashSet<(int, int)> GetEmptyCellCoordinates() => State.GetEmptyCellCoordinates();
 }
