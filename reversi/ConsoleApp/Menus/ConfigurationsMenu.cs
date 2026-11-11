@@ -1,5 +1,6 @@
 using BLL;
 using BLL.Contracts;
+using DAL.EF;
 using DAL.JSON;
 using MenuSystem;
 
@@ -8,7 +9,7 @@ namespace ConsoleApp.Menus;
 public static class ConfigurationsMenu
 {
     private static readonly Func<string> DummyMethod = Dummies.DummyMethod;
-    private static readonly IConfigRepository ConfigRepo = new JsonConfigRepository();
+    private static readonly IConfigRepository ConfigRepo = new EfConfigRepository();
 
     public static string Menu()
     {

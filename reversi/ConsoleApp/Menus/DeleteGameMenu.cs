@@ -9,7 +9,7 @@ public static class DeleteGameMenu
     {
         IGameRepository gameRepo = new JsonGameRepository();
 
-        return GameMenus.LoadMenu("Delete game", gameRepo, gameState =>
+        return GameMenus.LoadOrDeleteMenu("Delete game", gameRepo, gameState =>
         {
             gameRepo.Delete(gameState.Id);
             return "b";

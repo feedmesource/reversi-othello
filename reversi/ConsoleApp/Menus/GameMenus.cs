@@ -6,7 +6,7 @@ namespace ConsoleApp.Menus;
 
 public static class GameMenus
 {
-    public static string LoadMenu(string title, IGameRepository gameRepo, Func<GameState, string> onSelect)
+    public static string LoadOrDeleteMenu(string title, IGameRepository gameRepo, Func<GameState, string> onSelect)
     {
         var menu = new Menu(title, EMenuLevel.Second);
         var games = gameRepo.LoadAll();

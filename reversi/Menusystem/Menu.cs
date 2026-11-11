@@ -39,7 +39,7 @@ public class Menu
             Console.WriteLine(errorMessage);
             errorMessage = "";
             Console.Write("Choose: ");
-            var userChoice = Console.ReadLine()?.ToLower();
+            var userChoice = Console.ReadLine()?.ToLowerInvariant();
 
             if (userChoice == null || !MenuItems.ContainsKey(userChoice))
             {

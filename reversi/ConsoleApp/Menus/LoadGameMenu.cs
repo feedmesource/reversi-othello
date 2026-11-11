@@ -10,7 +10,7 @@ public static class LoadGameMenu
     {
         IGameRepository gameRepo = new JsonGameRepository();
 
-        return GameMenus.LoadMenu("Load Game", gameRepo, gameState =>
+        return GameMenus.LoadOrDeleteMenu("Load Game", gameRepo, gameState =>
         {
             var brain = new GameBrain(gameState);
             var controller = new GameController(brain);

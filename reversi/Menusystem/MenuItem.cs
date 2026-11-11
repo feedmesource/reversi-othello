@@ -9,7 +9,7 @@ public class MenuItem
 
     public MenuItem(string  label, string name, Func<string> methodToRun, Func<string>? nameProvider = default)
     {
-        Label = label.ToLower();
+        Label = label.ToLowerInvariant();
         Name = name;
         MethodToRun = methodToRun;
         NameProvider = nameProvider;
