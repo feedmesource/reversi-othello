@@ -1,5 +1,6 @@
 using BLL;
 using BLL.Contracts;
+using DAL.EF;
 using DAL.JSON;
 using Ui;
 
@@ -89,7 +90,7 @@ public class GameController
                 errorMessage = e.Message;
             }
 
-            IGameRepository gameRepo = new JsonGameRepository();
+            IGameRepository gameRepo = new EfGameRepository();
             gameRepo.Save(Brain.State);
         }
     }

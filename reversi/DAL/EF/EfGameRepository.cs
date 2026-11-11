@@ -40,7 +40,9 @@ public class EfGameRepository : IGameRepository
     public List<GameState> LoadAll()
     {
         using var db = new AppDbContext();
-        var gameStateDtos = db.GameStates.ToList();
+        var gameStateDtos = db.GameStates
+            .Include(x => x.Config)
+            .ThenInclude(x => x!.Players).ToList();
         return gameStateDtos.Select(x => GameStateMapper.ToDomain(x)).ToList();
     }
 
