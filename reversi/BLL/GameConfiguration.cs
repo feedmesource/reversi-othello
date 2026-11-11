@@ -8,7 +8,7 @@ public record GameConfiguration(
     int BoardHeight,
     IPlayer[] Players,
     bool IsOthello = false,
-    bool HaveWalls = false)
+    bool HaveWalls = false) : IBaseEntity
 {
     public GameConfiguration()
         : this(new IPlayer[2])

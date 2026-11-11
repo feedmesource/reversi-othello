@@ -1,8 +1,10 @@
+using BLL.Contracts;
+
 namespace BLL;
 
-public class GameState
+public class GameState : IBaseEntity
 {
-    public Guid Id = Guid.NewGuid();
+    public Guid Id { get; init; } =  Guid.NewGuid();
     private readonly ECellPiece[,] _board;
     public readonly GameConfiguration Config;
     public bool IsCurrentPlayerDark { get; private set; } = true;
