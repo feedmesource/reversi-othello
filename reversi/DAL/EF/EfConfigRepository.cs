@@ -10,15 +10,24 @@ public class EfConfigRepository : IConfigRepository
     public void Save(GameConfiguration config)
     {
         using var db = new AppDbContext();
-        var configDto = db.Configurations.FirstOrDefault(c => c.Id == config.Id)
-                        ?? db.Configurations.Add(
-                            GameConfigMapper.ToDto(
-                                new GameConfiguration { Id = config.Id })).Entity;
-        configDto.BoardWidth = config.BoardWidth;
-        configDto.BoardHeight = config.BoardHeight;
-        configDto.Players = config.Players.Select(x => PlayerMapper.ToDto(x)).ToList();
-        configDto.IsOthello = config.IsOthello;
-        configDto.HaveWalls = config.HaveWalls;
+
+        var configDto = db.Configurations
+            .FirstOrDefault(c => c.Id == config.Id);
+
+        if (configDto == null)
+        {
+            configDto = GameConfigMapper.ToDto(config);
+            db.Configurations.Add(configDto);
+        }
+        else
+        {
+            configDto.BoardWidth = config.BoardWidth;
+            configDto.BoardHeight = config.BoardHeight;
+            configDto.Players = config.Players.Select(PlayerMapper.ToDto).ToList();
+            configDto.IsOthello = config.IsOthello;
+            configDto.HaveWalls = config.HaveWalls;
+        }
+
         db.SaveChanges();
     }
 
