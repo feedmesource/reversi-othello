@@ -54,4 +54,12 @@ public static class GameStateMapper
 
         return twoDimensionalArray;
     }
+
+    public static void UpdateDto(GameStateDto dto, GameState gameState)
+    {
+        dto.Board = TwoDimensionalIntoJaggedArray(gameState.GetBoard());
+        dto.Config = GameConfigMapper.ToDto(gameState.Config);
+        dto.IsCurrentPlayerDark = gameState.IsCurrentPlayerDark;
+        dto.SavedAtUtc = DateTime.UtcNow;
+    }
 }

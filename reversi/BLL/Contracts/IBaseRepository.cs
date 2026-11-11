@@ -1,9 +1,10 @@
 namespace BLL.Contracts;
 
 public interface IBaseRepository<TEntity>
+    where TEntity : class
 {
-    void Save(TEntity config);
-    TEntity? Load (Guid id);
-    List<TEntity> LoadAll ();
+    void Save(TEntity entity);
+    TEntity? Load(Guid id);
+    List<TEntity> LoadAll();
     void Delete(Guid id);
 }
