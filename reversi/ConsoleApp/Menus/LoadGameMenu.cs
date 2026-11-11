@@ -9,9 +9,7 @@ public static class LoadGameMenu
 {
     public static string LoadGame()
     {
-        IGameRepository gameRepo = new EfGameRepository();
-
-        return GameMenus.LoadOrDeleteMenu("Load Game", gameRepo, gameState =>
+        return GameMenus.LoadOrDeleteMenu("Load Game", gameState =>
         {
             var brain = new GameBrain(gameState);
             var controller = new GameController(brain);

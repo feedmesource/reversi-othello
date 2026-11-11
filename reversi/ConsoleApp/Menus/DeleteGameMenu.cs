@@ -10,7 +10,7 @@ public static class DeleteGameMenu
     {
         IGameRepository gameRepo = new EfGameRepository();
 
-        return GameMenus.LoadOrDeleteMenu("Delete game", gameRepo, gameState =>
+        return GameMenus.LoadOrDeleteMenu("Delete game", gameState =>
         {
             gameRepo.Delete(gameState.Id);
             return "b";
