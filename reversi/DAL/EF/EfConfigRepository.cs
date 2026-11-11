@@ -21,11 +21,7 @@ public class EfConfigRepository : IConfigRepository
         }
         else
         {
-            configDto.BoardWidth = config.BoardWidth;
-            configDto.BoardHeight = config.BoardHeight;
-            configDto.Players = config.Players.Select(PlayerMapper.ToDto).ToList();
-            configDto.IsOthello = config.IsOthello;
-            configDto.HaveWalls = config.HaveWalls;
+            GameConfigMapper.UpdateDto(configDto, config);
         }
 
         db.SaveChanges();

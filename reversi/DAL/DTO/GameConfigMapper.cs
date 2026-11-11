@@ -23,4 +23,13 @@ public static class GameConfigMapper
         dto.IsOthello,
         dto.HaveWalls
     );
+    
+    public static void UpdateDto(GameConfigDto dto, GameConfiguration config)
+    {
+        dto.BoardWidth = config.BoardWidth;
+        dto.BoardHeight = config.BoardHeight;
+        dto.Players = config.Players.Select(PlayerMapper.ToDto).ToList();
+        dto.IsOthello = config.IsOthello;
+        dto.HaveWalls = config.HaveWalls;
+    }
 }
