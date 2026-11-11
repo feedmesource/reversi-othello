@@ -1,7 +1,7 @@
 using System.Text.Json;
 using BLL;
 using BLL.Contracts;
-using DAL.JSON.DTO;
+using DAL.DTO;
 
 namespace DAL.JSON;
 
