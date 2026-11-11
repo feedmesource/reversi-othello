@@ -71,6 +71,10 @@ public class GameController
                 errorMessage = e.Message;
                 continue;
             }
+            catch (FormatException)
+            {
+                break;
+            }
 
             if (!userInput)
             {

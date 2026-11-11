@@ -10,6 +10,11 @@ public class HumanConsoleMoveProvider : IMoveProvider
 
         var coordinateChoice = Console.ReadLine();
 
+        if (coordinateChoice == "exit")
+        {
+            throw new FormatException("Exit");
+        }
+
         if (coordinateChoice == null)
             return null;
 
