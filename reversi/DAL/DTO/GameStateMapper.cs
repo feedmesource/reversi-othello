@@ -8,7 +8,7 @@ public static class GameStateMapper
     {
         Id = state.Id,
         Board = TwoDimensionalIntoJaggedArray(state.GetBoard()),
-        Config = state.Config,
+        Config = GameConfigMapper.ToDto(state.Config),
         IsCurrentPlayerDark = state.IsCurrentPlayerDark,
         SavedAtUtc = DateTime.UtcNow,
     };
@@ -17,7 +17,7 @@ public static class GameStateMapper
     (
         dto.Id,
         JaggedIntoTwoDimensionalArray(dto.Board),
-        dto.Config,
+        GameConfigMapper.ToDomain(dto.Config!),
         dto.IsCurrentPlayerDark,
         dto.SavedAtUtc
     );

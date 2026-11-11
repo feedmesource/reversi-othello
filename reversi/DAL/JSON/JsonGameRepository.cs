@@ -7,7 +7,7 @@ namespace DAL.JSON;
 
 public class JsonGameRepository : IGameRepository
 {
-    private static readonly JsonSerializerOptions Options = DalHelpers.Options;
+    private static readonly JsonSerializerOptions Options = DalHelpers.JsonSerializerOptions;
 
     public void Save(GameState gameState)
     {

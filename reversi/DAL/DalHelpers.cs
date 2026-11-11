@@ -27,7 +27,7 @@ public static class DalHelpers
         File.Move(temp, path, overwrite: true);
     }
 
-    public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
     {
         WriteIndented = true, // pretty print files a human will open
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // "boardWidth" instead of "BoardWidth"

@@ -6,7 +6,7 @@ namespace DAL.JSON;
 
 public class JsonConfigRepository : IConfigRepository
 {
-    private static readonly JsonSerializerOptions Options = DalHelpers.Options;
+    private static readonly JsonSerializerOptions Options = DalHelpers.JsonSerializerOptions;
 
     public void Save(GameConfiguration config)
     {

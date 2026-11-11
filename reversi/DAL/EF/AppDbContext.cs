@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BLL;
 using DAL.DTO;
 using Microsoft.EntityFrameworkCore;
@@ -6,8 +7,9 @@ namespace DAL.EF;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<GameConfiguration> Configs { get; set; }
-    public DbSet<GameStateDto> States { get; set; }
+    public DbSet<GameConfigDto> Configurations { get; set; }
+    public DbSet<GameStateDto> GameStates { get; set; }
+    public DbSet<PlayerDto> Players { get; set; }
 
     public AppDbContext()
     {
@@ -32,5 +34,16 @@ public class AppDbContext : DbContext
             "reversi-othello");
         Directory.CreateDirectory(folder);
         return $"Data Source={Path.Combine(folder, "app.db")}";
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<GameStateDto>()
+            .Property(g => g.Board)
+            .HasConversion(
+                board => JsonSerializer.Serialize(board, DalHelpers.JsonSerializerOptions),
+                json => JsonSerializer.Deserialize<ECellPiece[][]>(
+                    json, DalHelpers.JsonSerializerOptions)!
+            );
     }
 }
