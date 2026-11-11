@@ -13,18 +13,18 @@ public static class ConfigurationsMenu
 
     public static string Menu()
     {
-        var menu2 = new Menu("Game Configuration", EMenuLevel.Deep);
+        var menu = new Menu("Game Configuration", EMenuLevel.Deep);
 
-        menu2.AddMenuItem(new MenuItem("l", "load configurations",
+        menu.AddMenuItem(new MenuItem("l", "load configurations",
             LoadConfigurations));
 
-        menu2.AddMenuItem(new MenuItem("a", "add configuration",
+        menu.AddMenuItem(new MenuItem("a", "add configuration",
             AddConfiguration));
 
-        menu2.AddMenuItem(new MenuItem("d", "delete configuration",
+        menu.AddMenuItem(new MenuItem("d", "delete configuration",
             DeleteConfiguration));
 
-        return menu2.Run();
+        return menu.Run();
     }
 
     private static string LoadConfigurations()

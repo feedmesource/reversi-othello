@@ -10,7 +10,7 @@ public static class SettingsMenu
     {
         var menu1 = new Menu("Settings", EMenuLevel.Second);
         menu1.AddMenuItem(new MenuItem("c", "game configuration", ConfigurationsMenu.Menu));
-        menu1.AddMenuItem(new MenuItem("2", "setting 2", DummyMethod));
+        menu1.AddMenuItem(new MenuItem("p", "player types", PlayerMenu.Menu));
         menu1.AddMenuItem(new MenuItem("3", "setting 3", DummyMethod));
         var returnValue = menu1.Run();
 

@@ -7,7 +7,7 @@ namespace ConsoleApp;
 public static class Variables
 {
     public static GameConfiguration Config;
-    public static readonly IPlayer[] Players;
+    public static IPlayer[] Players;
 
     static Variables()
     {
