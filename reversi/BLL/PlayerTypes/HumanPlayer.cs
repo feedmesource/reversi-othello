@@ -10,4 +10,6 @@ public class HumanPlayer : IPlayer
     {
         Name = name;
     }
+
+    public override string ToString() => "Human player";
 }

@@ -9,7 +9,7 @@ public static class PlayerMenu
     public static string Menu()
     {
         var menu = new Menu(
-            $"Choose player types! Current: {string.Join(" vs ", Variables.Players.Select(x => x.GetType().ToString()).ToArray())}",
+            $"Choose player types! Current: {string.Join(" vs ", Variables.Players.Select(x => x.ToString()).ToArray())}",
             EMenuLevel.Deep);
 
         var humanPlayer = new HumanPlayer("Player 1");

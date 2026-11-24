@@ -5,4 +5,6 @@ namespace BLL.PlayerTypes;
 public class AiPlayer : IPlayer
 {
     public string Name { get; } = "AI player";
+
+    public override string ToString() => "Random AI";
 }
