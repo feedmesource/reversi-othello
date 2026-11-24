@@ -5,6 +5,19 @@ student code: 266685TAI
 uni-id: aituul  
 assigned game: reversi-othello  
 
+## Screenshots
+
+### Menu
+![Game starting menu](images/screenshot-1.png)
+![Load games](images/screenshot-2.png)
+![Game configuration menu](images/screenshot-3.png)
+![Load configurations](images/screenshot-4.png)
+![Choose player types](images/screenshot-7.png)
+
+### Gameplay
+![Example game 1](images/screenshot-6.png)
+![Example game 2](images/screenshot-5.png)
+
 ## EF Core migrations commands
 ```bash
 # install and update commands
