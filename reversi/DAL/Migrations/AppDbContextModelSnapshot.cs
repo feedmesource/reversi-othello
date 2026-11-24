@@ -77,10 +77,12 @@ namespace DAL.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PlayerType")
                         .IsRequired()
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -94,7 +96,8 @@ namespace DAL.Migrations
                 {
                     b.HasOne("DAL.DTO.GameConfigDto", "Config")
                         .WithMany("GameStates")
-                        .HasForeignKey("ConfigId");
+                        .HasForeignKey("ConfigId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Config");
                 });

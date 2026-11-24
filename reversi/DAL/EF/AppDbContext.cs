@@ -45,5 +45,10 @@ public class AppDbContext : DbContext
                 json => JsonSerializer.Deserialize<ECellPiece[][]>(
                     json, DalHelpers.JsonSerializerOptions)!
             );
+
+        modelBuilder.Entity<GameStateDto>()
+            .HasOne(g => g.Config)
+            .WithMany(c => c.GameStates)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
